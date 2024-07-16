@@ -1,0 +1,20 @@
+/* Place custom css here */
+.img-container img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 100%;
+  height: auto;
+}
+
+figure {
+    text-align: center;
+    /* Center the figure contents */
+}
+
+figcaption {
+    font-style: italic;
+    /* Example styling for the caption */
+    padding-top: 10px;
+    /* Space between image and caption */
+}

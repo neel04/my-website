@@ -1,0 +1,9 @@
+**DS_Store
+**/resources
+/resources
+/public
+**/public
+**/public*
+.hugo_build.lock
+**.hugo_build.lock
+**.hugo_build.lock*

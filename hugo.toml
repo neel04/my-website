@@ -1,15 +1,11 @@
-baseURL = 'https://example.org/'
+baseURL = "https://neel04.github.io/my-website/"
 languageCode = 'en-us'
 title = 'Neel Gupta'
-theme = 'Typo'
-
-[taxonomies]
-tag = 'tags'
+theme = 'typo'
 
 [params]
 # Meta description
 description = "Neel Gupta's Homepage"
-favicon = "/static/favicon_2.ico"
 
 # Appearance settings
 theme = 'light'
@@ -17,7 +13,7 @@ colorPalette = 'gruvebox'
 hideHeader = true
 
 # Intro on main page, content is markdown
-homeIntroTitle = 'Hey!'
+homeIntroTitle = 'Hey! 👋'
 homeIntroContent = """
 I'm Neel, an undergrad currently studying Data Science & Analytics in Ireland.
 I'm particularly interested in Deep Learning research, and often spend my time reading papers
@@ -25,13 +21,14 @@ and exploring new ideas.
 """
 
 # Collection to display on home
-homeCollectionTitle = 'Posts'
-homeCollection = 'posts'
+# Comment this out to remove it from homepage
+# homeCollectionTitle = 'Projects'
+# homeCollection = 'projects'
 
 # Lists parameters
 paginationSize = 100
 listSummaries = true
-listDateFormat = '2nd Jan 2006'
+listDateFormat = '2006'
 
 # Breadcrumbs
 breadcrumbs = true
@@ -48,26 +45,35 @@ url = "https://x.com/awesome_ruler_"
 # Main menu pages
 [[params.menu]]
 name = "home"
-url = "/"
+url = "/my-website/"
 
 [[params.menu]]
-name = "posts"
-url = "/posts"
+name = "projects"
+url = "/my-website/projects"
 
 [[params.menu]]
-name = "about"
-url = "/about"
+name = "blog"
+url = "my-website/blog"
 
 # Syntax highligth on code blocks
 [markup]
 [markup.highlight]
 style = 'algol'
 
+[markup.goldmark.parser]
+wrapStandAloneImageWithinParagraph = false
+
+[markup.goldmark.parser.attribute]
+block = true
+
+[markup.goldmark.renderer]
+unsafe = true
+
 # Giscus comments
 [params.giscus]
 enable = false
-repo = "user/repo"
-repoid = "repoId"
+repo = "neel04/my-website"
+repoid = "R_kgDOMWylMg"
 category = "General"
 categoryid = "categoryId"
 mapping = "pathname"
