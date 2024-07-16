@@ -1,0 +1,74 @@
+baseURL = 'https://example.org/'
+languageCode = 'en-us'
+title = 'Neel Gupta'
+theme = 'Typo'
+
+[taxonomies]
+tag = 'tags'
+
+[params]
+# Meta description
+description = "Neel Gupta's Homepage"
+favicon = "/static/favicon_2.ico"
+
+# Appearance settings
+theme = 'light'
+colorPalette = 'gruvebox'
+hideHeader = true
+
+# Intro on main page, content is markdown
+homeIntroTitle = 'Hey!'
+homeIntroContent = """
+I'm Neel, an undergrad currently studying Data Science & Analytics in Ireland.
+I'm particularly interested in Deep Learning research, and often spend my time reading papers
+and exploring new ideas.
+"""
+
+# Collection to display on home
+homeCollectionTitle = 'Posts'
+homeCollection = 'posts'
+
+# Lists parameters
+paginationSize = 100
+listSummaries = true
+listDateFormat = '2nd Jan 2006'
+
+# Breadcrumbs
+breadcrumbs = true
+
+# Social icons
+[[params.social]]
+name = "github"
+url = "https://github.com/neel04"
+
+[[params.social]]
+name = "twitter"
+url = "https://x.com/awesome_ruler_"
+
+# Main menu pages
+[[params.menu]]
+name = "home"
+url = "/"
+
+[[params.menu]]
+name = "posts"
+url = "/posts"
+
+[[params.menu]]
+name = "about"
+url = "/about"
+
+# Syntax highligth on code blocks
+[markup]
+[markup.highlight]
+style = 'algol'
+
+# Giscus comments
+[params.giscus]
+enable = false
+repo = "user/repo"
+repoid = "repoId"
+category = "General"
+categoryid = "categoryId"
+mapping = "pathname"
+theme = "preferred_color_scheme"
