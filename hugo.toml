@@ -42,6 +42,10 @@ url = "https://github.com/neel04"
 name = "twitter"
 url = "https://x.com/awesome_ruler_"
 
+[[params.social]]
+name = "email"
+url = "mailto:neelgupta04@outlook.com"
+
 # Main menu pages
 [[params.menu]]
 name = "home"

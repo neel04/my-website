@@ -18,3 +18,12 @@ figcaption {
     padding-top: 10px;
     /* Space between image and caption */
 }
+
+aside {
+  background-color: #ecdeb0; /* Light gold background */
+  border-left: 4px solid #d59e05; /* Blue left border */
+  padding: 10px 15px; /* Padding inside the aside */
+  margin: 20px 0; /* Margin outside the aside */
+  font-style: italic; /* Italic font style */
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.1); /* Subtle shadow */
+}

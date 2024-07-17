@@ -1,6 +1,6 @@
 :root {
-    --main-width: 780px;
-    --main-padding: 1.4em;
+    --main-width: 840px;
+    --main-padding: 0.5em;
     --main-padding-bottom: 3rem;
 
     --caption-padding: calc(.25 * var(--main-padding));
