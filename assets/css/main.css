@@ -10,6 +10,7 @@ body {
   padding-right: var(--main-padding);
   color: var(--content-primary);
   background: var(--background);
+  font-size: 1.15em;
 }
 
 .content {

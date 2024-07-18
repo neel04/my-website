@@ -197,7 +197,7 @@ Fig 9. Loop executed for 1 forward pass to perform <code>iters_to_do</code> iter
 
 # Adversarial Perturbation
 
-In an attempt to guide the model towards learning a more explicit error correction methodology and aid the `n + k` training loop, we introduce *"*Adversarial Perturbation”. Effectively, when we iterate the `recur_block,` we get an intermediate representation which is passed to the next iteration. That iteration is termed `interim_thought`.
+In an attempt to guide the model towards learning a more explicit error correction methodology and aid the `n + k` training loop, we introduce "*Adversarial* Perturbation”. Effectively, when we iterate the `recur_block,` we get an intermediate representation which is passed to the next iteration. That iteration is termed `interim_thought`.
 
 The "output_sequence” is obtained when we apply the `output_head(interim_thought)`, and `.softmax().argmax(dim=-1)` the logits.
 
@@ -295,7 +295,7 @@ Prefix sums are a kinda of rolling parity, where at each index of the target seq
 
 To give a concrete example:
 
-```python
+```py
 src: 1 0 0 1 1
 
 tgt[0] = parity(1) = 1

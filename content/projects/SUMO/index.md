@@ -1,7 +1,6 @@
 ---
 title: "SUMO"
 summary: "Scaling ViTs and ConvNets for Full Self-Driving"
-description: "Applying classes to Hugo images using GitHub-like tags, enabling auto dark light mode switch and sizing control."
 toc: false
 readTime: true
 autonumber: false

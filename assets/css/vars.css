@@ -1,5 +1,5 @@
 :root {
-    --main-width: 840px;
+    --main-width: 900px;
     --main-padding: 0.5em;
     --main-padding-bottom: 3rem;
 
@@ -41,6 +41,8 @@
     /* Code */
     --code-padding: 1.5rem;
     --code-border-radius: 10px;
+    --code-background: rgb(241, 231, 189);
+    --code-border: rgb(178, 163, 142);
 
     /* Social section */
     --social-icons-bottom-margin: 3rem;

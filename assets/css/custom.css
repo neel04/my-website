@@ -20,10 +20,87 @@ figcaption {
 }
 
 aside {
-  background-color: #ecdeb0; /* Light gold background */
+  background-color: #eaddad; /* Light gold background */
   border-left: 4px solid #d59e05; /* Blue left border */
   padding: 10px 15px; /* Padding inside the aside */
   margin: 20px 0; /* Margin outside the aside */
   font-style: italic; /* Italic font style */
+  color: #000000; /* Dark text color */
   box-shadow: 2px 2px 5px rgba(0,0,0,0.1); /* Subtle shadow */
+}
+
+html[data-theme="dark"] {
+  --bg-color: rgb(40, 40, 40);
+  --text-color: #ebdbb2;
+  --link-color: #bab373;
+  --hover-color: #d3869b;
+}
+
+html[data-theme="light"] {
+  --bg-color: #fbf1c7;
+  --text-color: #3c3836;
+  --link-color: #6f4830;
+  --hover-color: #870a57;
+}
+
+
+html[data-theme="light"] code {
+  background-color: rgb(241, 231, 189);
+  border-color: rgb(112, 102, 94);
+}
+
+html[data-theme="light"] pre {
+  background-color: rgb(199, 51, 51);
+  color: #ebdbb2;
+  border: 1px solid rgb(112, 102, 94);
+}
+
+
+html[data-theme="light"] p code {
+  background-color: rgb(241, 231, 189);
+}
+
+html[data-theme="dark"] aside {
+  background-color: #c9bb8a;
+}
+
+html[data-theme="light"] pre,
+html[data-theme="light"] pre *,
+html[data-theme="light"] code,
+html[data-theme="light"] code * {
+  background-color: rgb(241, 231, 189) !important;
+  color: #3c3836;
+}
+
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+a {
+  color: var(--link-color);
+}
+
+a:hover {
+  color: var(--hover-color);
+}
+
+#dark-mode-toggle {
+  position: absolute;
+  top: 3rem;  /* Aligns with the top of the header */
+  right: 1rem;  /* Places it on the right side */
+  z-index: 1000;
+}
+
+/* Ensure the header has a relative position for proper alignment */
+header {
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  #dark-mode-toggle {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
 }

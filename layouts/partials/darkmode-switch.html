@@ -1,0 +1,55 @@
+<!-- layouts/partials/darkmode-switch.html -->
+<button id="dark-mode-toggle" aria-label="Toggle dark mode">
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path class="sun" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42M12 17.5a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11z"></path>
+    <path class="moon" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+  </svg>
+</button>
+
+<style>
+  #dark-mode-toggle {
+    background: none;
+    border: none;
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+  }
+  #dark-mode-toggle .sun,
+  #dark-mode-toggle .moon {
+    display: none;
+  }
+  html[data-theme="light"] #dark-mode-toggle .moon {
+    display: block;
+  }
+  html[data-theme="dark"] #dark-mode-toggle .sun {
+    display: block;
+  }
+</style>
+
+<script>
+  const darkModeToggle = document.getElementById('dark-mode-toggle');
+  const htmlElement = document.documentElement;
+
+  function setWebTheme(theme) {
+    htmlElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }
+
+  darkModeToggle.addEventListener('click', () => {
+    const currentTheme = htmlElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    setWebTheme(newTheme);
+  });
+
+  // Set initial theme
+  const storedTheme = localStorage.getItem('theme');
+  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+  
+  if (storedTheme) {
+    setWebTheme(storedTheme);
+  } else if (prefersDarkScheme.matches) {
+    setWebTheme('dark');
+  } else {
+    setWebTheme('light');
+  }
+</script>
