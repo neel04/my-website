@@ -72,6 +72,12 @@ html[data-theme="light"] code * {
   color: #3c3836;
 }
 
+html[data-theme="light"] td *,
+html[data-theme="light"] td {
+  background-color: rgb(246, 235, 195);
+  color: #3c3836;
+}
+
 
 body {
   background-color: var(--bg-color);
