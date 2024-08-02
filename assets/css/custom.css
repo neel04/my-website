@@ -24,9 +24,11 @@ aside {
   border-left: 4px solid #d59e05; /* Blue left border */
   padding: 10px 15px; /* Padding inside the aside */
   margin: 20px 0; /* Margin outside the aside */
-  font-style: italic; /* Italic font style */
+  font-style: normal;
   color: #000000; /* Dark text color */
   box-shadow: 2px 2px 5px rgba(0,0,0,0.1); /* Subtle shadow */
+  font-family: literata; /* Change font family to a regular font */
+  font-size: 1em !important;
 }
 
 html[data-theme="dark"] {
@@ -62,6 +64,20 @@ html[data-theme="light"] p code {
 
 html[data-theme="dark"] aside {
   background-color: #c9bb8a;
+}
+
+html[data-theme="dark"] aside.toc {
+  --link-color: rgb(111, 72, 48);
+}
+
+.toc p {
+  font-size: 1.3em; /* Increase font size for TOC paragraphs */
+  line-height: 1em; /* Increase line height for more space between lines */
+}
+
+.toc a {
+  display: block; /* Ensure each link is on a new line */
+  margin-bottom: 0.2em; /* Add space between links */
 }
 
 html[data-theme="light"] pre,

@@ -8,7 +8,7 @@ theme = 'typo'
 description = "Neel Gupta's Homepage"
 
 # Appearance settings
-theme = 'dark'
+theme = 'auto'
 colorPalette = 'gruvebox'
 hideHeader = true
 
@@ -22,7 +22,7 @@ and exploring new ideas.
 
 # Collection to display on home
 # Comment this out to remove it from homepage
-# homeCollectionTitle = 'Projects'
+# homeCollectionTitle = 'projects'
 # homeCollection = 'projects'
 
 # Lists parameters
@@ -41,7 +41,6 @@ url = "https://github.com/neel04"
 [[params.social]]
 name = "twitter"
 url = "https://x.com/awesome_ruler_"
-
 [[params.social]]
 name = "email"
 url = "mailto:neelgupta04@outlook.com"
@@ -57,7 +56,7 @@ url = "/my-website/projects"
 
 [[params.menu]]
 name = "blog"
-url = "my-website/blog"
+url = "/my-website/blog/"
 
 # Syntax highligth on code blocks
 [markup]
