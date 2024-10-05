@@ -1,7 +1,7 @@
 ---
 title: "ReAct"
 summary: "Recurrence for Adaptive Computation"
-toc: false
+toc: true
 readTime: true
 autonumber: false
 showTags: false
@@ -29,7 +29,7 @@ Due to financial and time constraints (I'm broke) we couldn't do thorough ablati
 </aside>
 
 
-# Related Work
+## Related Work
 
 This section is a rapid-fire primer on the work done by [Bansal et al.](https://arxiv.org/abs/2202.05826) and [Kaizer et al.](https://arxiv.org/abs/1511.08228) for embedding adaptive-computational properties in recurrent styled models.
 
@@ -75,7 +75,7 @@ Another issue here is that transformers simply can't handle unseen positional en
 
 We don't consider "interpolating” positional encodings to be an effective way to combat length-generalization as the model actually doesn't extrapolate - rather we adjust the inputs to be in-distribution which can be a brittle process. `ReAct` on the other hand uses vanilla sinusoidal embedding and can still lenght-extrapolate. This, length extrapolation can be achieved through inductive biases/priors alone instead of resorting to unholy tricks.
 
-# Architecture
+## Architecture
 
 
 <figure>
@@ -91,7 +91,7 @@ Fig 4. Diagram of <code>ReAct</code>. Here, <code>+</code> denotes vector additi
 
 While the original ideas was envisioned as a short weekend project to swap out the `nn.Conv1d` layers to `nn.MultiHeadAttention` layers, more techniques and tricks were required to get it to work. There were some interesting results - such as self-attention being next-to-useless as well as the model being resistant to overfitting/memorisation. I will elaborate on those changes below.
 
-# A Lighter Attention - `LiteAttention`
+### A Lighter Attention - `LiteAttention`
 
 One of the most counterintuitive findings of this (short) project was how **ineffective** Multi-head self-attention is, especially for OOD generalization. The problem with MHSA is simple - ***it works too well!***
 
@@ -124,7 +124,7 @@ As explained, `LiteAttention` simply replaces the *matmul* used in `SelfAttentio
 
 I doubt `LiteAttention` holds up with scale. Because it was intended to explicitly remove a *matmul,* there is little inter-token information mixing. It's closer to a gate used in RNNs. However, it's able to (surprisingly) hold up towards rather complicated tasks given its simplicity. I suspect adding the data-dependency is what makes it so expressive
 
-# Implicit error correction using `n+k`
+### Implicit error correction using `n+k`
 
 `n+k` sampling refers to how we handle the training loop. Because we have a recurrent architecutre, we want to encourage the model to learn an error-correcting mechanism. The basic idea is simple: 
 
@@ -169,7 +169,7 @@ Fig 8. Weighing the loss exponentially (with <code>base-2</code>) to approximate
 
 This is a hack. If someone has a better way to do this, please give me a DM. My contact details will be below.
 
-## Recall
+### Recall
 
 The `recall` mechanism introduced by [*Kaiser et al.*](https://arxiv.org/abs/1511.08228) is a simple modification. As indicated in (**Figure 4**), it's a long skip connection which helps in the "Overthinking” problem. i.e, even if you perform more iterations that necessary, the model is able to recover the accuracy and not deviate too much.
 
@@ -195,7 +195,7 @@ Fig 9. Loop executed for 1 forward pass to perform <code>iters_to_do</code> iter
 </figcaption>
 </figure>
 
-# Adversarial Perturbation
+## Adversarial Perturbation
 
 In an attempt to guide the model towards learning a more explicit error correction methodology and aid the `n + k` training loop, we introduce "*Adversarial* Perturbation”. Effectively, when we iterate the `recur_block,` we get an intermediate representation which is passed to the next iteration. That iteration is termed `interim_thought`.
 
@@ -256,13 +256,13 @@ Fig 12. Distribution of errors on a batch of sequences. <code> n = 4</code>
 
 </aside>
 
-## Curriculum Learning
+### Curriculum Learning
 
 We also utilise simple curriculum learning - the length/complexity of the input sequence is ramped up. We start off with some length defined by `lower_b` and slowly increment it until its equal to `upper_b`. Increments happen when the model is able to achieve an element accuracy of $\geq 98\%$ on the current curriculum.
 
 We have found that adding this basic curriculum helps in generalization though its not strictly needed.
 
-## Positional encoding
+### Positional encoding
 
 As mentioned before, this architecture uses simple sinusoidal positional encodings - which is highly unusual, considering other methods have to often work around them.
 
@@ -285,11 +285,11 @@ Somewhat surprisingly, the network is actually **worse** when provided alternati
 
 ---
 
-# Results
+## Results
 
 I tested on 3 tasks: `prefix_sums`, `reverse_string` and `binary_addition`.
 
-## Prefix Sums
+### Prefix Sums
 
 Prefix sums are a kinda of rolling parity, where at each index of the target sequence you evaluate the parity of all the elements from the source sequence proceeding that index. For researchers familiar with MI, this is similar to the [tracr-xproportion](https://arxiv.org/pdf/2301.05062.pdf) task, except with parity 🙂
 
@@ -337,7 +337,7 @@ Fig 13. Again, standard transformers show 0 ability to generalize OOD. <code>ReA
 </figcaption>
 </figure>
 
-## Reverse string
+### Reverse string
 
 <figure>
 <div class="img-container">
@@ -351,7 +351,7 @@ Here, you can see the model is able to extrapolate both **iteration-wise** and *
 
 I believe the perfect extrapolation ($100\%$ sequence accuracy) is due to the dynamics of the task being relatively simpler - as compared to "harder” tasks like binary addition which suffers from some accumulating errors.
 
-## Binary Addition
+### Binary Addition
 
 Here, `ReAct` successfully extrapolate 2 digits OOD that is the validation set. However, after 5 digits OOD we start seeing a problem:
 

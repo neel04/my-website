@@ -7,6 +7,12 @@
   height: auto;
 }
 
+body {
+  font-family: 'IBM Plex sans', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
 figure {
     text-align: center;
     /* Center the figure contents */
@@ -20,15 +26,16 @@ figcaption {
 }
 
 aside {
-  background-color: #eaddad; /* Light gold background */
+  background-color: #f5e6b0; /* Light gold background */
   border-left: 4px solid #d59e05; /* Blue left border */
   padding: 10px 15px; /* Padding inside the aside */
   margin: 20px 0; /* Margin outside the aside */
   font-style: normal;
   color: #000000; /* Dark text color */
   box-shadow: 2px 2px 5px rgba(0,0,0,0.1); /* Subtle shadow */
-  font-family: literata; /* Change font family to a regular font */
-  font-size: 1em !important;
+  font-family: 'IBM Plex Sans', sans-serif; /* Change font family to a regular font */
+  font-weight: 400;
+  font-size: 0.92em;
 }
 
 html[data-theme="dark"] {
@@ -39,12 +46,16 @@ html[data-theme="dark"] {
 }
 
 html[data-theme="light"] {
-  --bg-color: #fbf1c7;
+  --bg-color: #fef6d6;
   --text-color: #3c3836;
   --link-color: #6f4830;
   --hover-color: #870a57;
 }
 
+
+html code{
+  font-family: 'JetBrains Mono', monospace;
+}
 
 html[data-theme="light"] code {
   background-color: rgb(241, 231, 189);
@@ -67,7 +78,7 @@ html[data-theme="dark"] aside {
 }
 
 html[data-theme="dark"] aside.toc {
-  --link-color: rgb(111, 72, 48);
+  --link-color: rgb(80, 42, 18);
 }
 
 .toc p {
@@ -86,6 +97,10 @@ html[data-theme="light"] code,
 html[data-theme="light"] code * {
   background-color: rgb(241, 231, 189) !important;
   color: #3c3836;
+}
+
+html[data-theme="dark"] code * {
+  background-color: #323232 !important;
 }
 
 html[data-theme="light"] td *,
@@ -125,4 +140,8 @@ header {
     top: 0.5rem;
     right: 0.5rem;
   }
+}
+
+.header .flex p.small {
+  font-size: 0.95em;
 }
