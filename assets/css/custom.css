@@ -33,9 +33,9 @@ aside {
   font-style: normal;
   color: #000000; /* Dark text color */
   box-shadow: 2px 2px 5px rgba(0,0,0,0.1); /* Subtle shadow */
-  font-family: 'IBM Plex Sans', sans-serif; /* Change font family to a regular font */
-  font-weight: 400;
-  font-size: 0.92em;
+  font-family: 'Titillium Web', sans-serif; /* Change font family to a regular font */
+  font-weight: 500;
+  font-size: 0.95em;
 }
 
 html[data-theme="dark"] {
@@ -73,6 +73,10 @@ html[data-theme="light"] p code {
   background-color: rgb(241, 231, 189);
 }
 
+html[data-theme="dark"] p code {
+  background-color: #3c3836;
+}
+
 html[data-theme="dark"] aside {
   background-color: #c9bb8a;
 }
@@ -99,16 +103,42 @@ html[data-theme="light"] code * {
   color: #3c3836;
 }
 
+html[data-theme="dark"] pre,
+html[data-theme="dark"] pre *,
+html[data-theme="dark"] code,
 html[data-theme="dark"] code * {
   background-color: #323232 !important;
+  color: #ebdbb2;
 }
 
 html[data-theme="light"] td *,
 html[data-theme="light"] td {
-  background-color: rgb(246, 235, 195);
+  background-color: rgb(235, 222, 175);
   color: #3c3836;
 }
 
+html[data-theme="dark"] th *,
+html[data-theme="dark"] th {
+  background-color: rgb(50, 50, 50);
+  color: rgb(246, 235, 195);
+}
+
+html[data-theme="dark"] td {
+  background-color: #282828;
+  color: rgb(246, 235, 195);
+}
+
+html[data-theme="dark"] aside code,
+html[data-theme="dark"] aside.toc code * {
+  background-color: rgb(202, 188, 129) !important;
+  color: #282625 !important;
+}
+
+html[data-theme="light"] aside.toc code,
+html[data-theme="light"] aside.toc code * {
+  background-color: rgb(228, 216, 169) !important;
+  color: #282625 !important;
+}
 
 body {
   background-color: var(--bg-color);

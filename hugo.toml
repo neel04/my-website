@@ -8,7 +8,7 @@ theme = 'typo'
 description = "Neel Gupta's Homepage"
 
 # Appearance settings
-theme = 'auto'
+theme = 'light'
 colorPalette = 'gruvebox'
 hideHeader = true
 
