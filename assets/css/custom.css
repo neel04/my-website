@@ -43,10 +43,17 @@ aside {
 }
 
 html[data-theme="dark"] {
-  --bg-color: rgb(40, 40, 40);
+  --bg-color: #1d2021;
   --text-color: #ebdbb2;
-  --link-color: #bab373;
-  --hover-color: #d3869b;
+  --link-color: #d3b877;
+  --hover-color: #f0d7a3;
+  --surface-raised: #282828;
+  --surface-muted: #32302f;
+  --border-accent: #d79921;
+  --code-border: #665c54;
+  --citation-color: #d8aa4c;
+  --citation-hover: #f1c870;
+  --heading-color: #ffe9ad;
 }
 
 html[data-theme="light"] {
@@ -79,14 +86,20 @@ html[data-theme="light"] p code {
 
 html[data-theme="dark"] p code {
   background-color: #3c3836;
+  border-color: var(--code-border);
 }
 
 html[data-theme="dark"] aside {
-  background-color: #c9bb8a;
+  background-color: #282828;
+  border-left-color: var(--border-accent);
+  color: var(--text-color);
+  box-shadow: 0 8px 22px rgba(29, 32, 33, 0.35);
 }
 
 html[data-theme="dark"] aside.toc {
-  --link-color: rgb(80, 42, 18);
+  --link-color: var(--link-color);
+  background-color: #282828;
+  border-left-color: var(--border-accent);
 }
 
 .toc p {
@@ -111,8 +124,9 @@ html[data-theme="dark"] pre,
 html[data-theme="dark"] pre *,
 html[data-theme="dark"] code,
 html[data-theme="dark"] code * {
-  background-color: #323232 !important;
-  color: #ebdbb2;
+  background-color: #3c3836 !important;
+  color: var(--text-color);
+  border-color: var(--code-border);
 }
 
 html[data-theme="light"] td *,
@@ -128,14 +142,35 @@ html[data-theme="dark"] th {
 }
 
 html[data-theme="dark"] td {
+  background-color: #32302f;
+  color: var(--text-color);
+}
+
+html[data-theme="dark"] th *,
+html[data-theme="dark"] th {
   background-color: #282828;
-  color: rgb(246, 235, 195);
+  color: var(--text-color);
 }
 
 html[data-theme="dark"] aside code,
 html[data-theme="dark"] aside.toc code * {
-  background-color: rgb(202, 188, 129) !important;
-  color: #282625 !important;
+  background-color: #3c3836 !important;
+  color: var(--text-color) !important;
+  border-color: var(--code-border) !important;
+}
+
+html[data-theme="dark"] sup .footnote-ref,
+html[data-theme="dark"] .footnotes .footnote-backref,
+html[data-theme="dark"] .footnotes a {
+  color: var(--citation-color);
+  text-decoration-color: var(--citation-color);
+}
+
+html[data-theme="dark"] sup .footnote-ref:hover,
+html[data-theme="dark"] .footnotes .footnote-backref:hover,
+html[data-theme="dark"] .footnotes a:hover {
+  color: var(--citation-hover);
+  text-decoration-color: var(--citation-hover);
 }
 
 html[data-theme="light"] aside.toc code,
@@ -147,6 +182,15 @@ html[data-theme="light"] aside.toc code * {
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
+}
+
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4,
+html[data-theme="dark"] h5,
+html[data-theme="dark"] h6 {
+  color: var(--heading-color) !important;
 }
 
 a {
