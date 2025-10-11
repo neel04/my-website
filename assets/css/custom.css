@@ -157,6 +157,19 @@ a:hover {
   color: var(--hover-color);
 }
 
+.heading .anchor {
+  visibility: hidden;
+  text-decoration: none;
+  margin-left: 0.35em;
+  color: var(--content-secondary, currentColor);
+}
+
+.heading:hover .anchor,
+.heading .anchor:focus,
+.heading .anchor:focus-visible {
+  visibility: visible;
+}
+
 #dark-mode-toggle {
   position: absolute;
   top: 3rem;  /* Aligns with the top of the header */

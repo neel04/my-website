@@ -5,5 +5,5 @@
 </p>
 
 {{ if .Param "math" }}
-{{ partialCached "math.html" . }}
+  {{ partial "math.html" (dict "context" . "part" "body") }}
 {{ end }}
