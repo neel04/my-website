@@ -15,6 +15,9 @@
 <link rel="shortcut icon" type="image/x-icon" href="{{ "favicon.ico" | relURL }}">
 {{ partialCached "head/css.html" . }}
 {{ partialCached "head/js.html" . }}
+{{ if or (.Params.math) (site.Params.math) }}
+{{ partial "head/math.html" . }}
+{{ end }}
 {{ if hugo.IsProduction }}
 {{ template "_internal/google_analytics.html" . }}
 {{ end }}

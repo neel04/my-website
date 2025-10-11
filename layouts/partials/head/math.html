@@ -1,0 +1,18 @@
+<!-- MathJax v3 for LaTeX rendering -->
+<script>
+  window.MathJax = {
+    tex: {
+      packages: {'[+]': ['textmacros']},
+      inlineMath: [["$","$"],["\\(","\\)"]],
+      displayMath: [["$$","$$"],["\\[","\\]"]],
+      processEscapes: true,
+      tags: 'ams'
+    },
+    loader: {load: ['[tex]/textmacros']},
+    options: {
+      skipHtmlTags: ['script','noscript','style','textarea','pre','code'],
+    },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>

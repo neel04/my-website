@@ -31,24 +31,27 @@
   const htmlElement = document.documentElement;
 
   function setWebTheme(theme) {
+    // Update <html> data attribute for any custom CSS
     htmlElement.setAttribute('data-theme', theme);
+    // Keep the theme's CSS in sync by updating <body> class
+    try {
+      document.body.classList.remove('light', 'dark', 'auto');
+      document.body.classList.add(theme);
+    } catch (e) {}
+    // Persist preference
     localStorage.setItem('theme', theme);
   }
 
   darkModeToggle.addEventListener('click', () => {
-    const currentTheme = htmlElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    setWebTheme(newTheme);
+    const current = htmlElement.getAttribute('data-theme') || (document.body.classList.contains('dark') ? 'dark' : 'light');
+    const next = current === 'dark' ? 'light' : 'dark';
+    setWebTheme(next);
   });
 
-  // Set initial theme
+  // Set initial theme: default to light, ignore system preference
   const storedTheme = localStorage.getItem('theme');
-  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-  
-  if (storedTheme) {
+  if (storedTheme === 'dark' || storedTheme === 'light') {
     setWebTheme(storedTheme);
-  } else if (prefersDarkScheme.matches) {
-    setWebTheme('dark');
   } else {
     setWebTheme('light');
   }

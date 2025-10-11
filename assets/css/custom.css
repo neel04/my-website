@@ -13,6 +13,10 @@ body {
   font-style: normal;
 }
 
+/* Ensure components that honor CSS color-scheme react to the site mode */
+body.light { color-scheme: light; }
+body.dark  { color-scheme: dark; }
+
 figure {
     text-align: center;
     /* Center the figure contents */
