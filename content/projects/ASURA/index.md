@@ -101,32 +101,28 @@ We're now at a position to express our proposed $\textit{ASURA}$ architecture. W
 
 We can define a stack of $L$ blocks/layers $\textit{ASURA} = [\mathcal{B}(\theta_{0}),\ldots,\mathcal{B}(\theta_{L})]$.
 
-Applying it recursively for $i$ iterations:
-
+Applying it recursively for $i$ iterations on some input $x$, the `fwd` pass looks like:
 
 $$
 \begin{align*}
-  \textit{ASURA} = [\mathcal{B}(\theta_0), ..., \mathcal{B}(\theta_L)] \newline
-  \hat{y} = \textit{ASURA}(x; i) = \textit{ASURA}^{i}(x)
+  \textit{ASURA}(x) = (\mathcal{B}(\theta_0) \circ \mathcal{B}(\theta_1) \circ ... \mathcal{B}(\theta_L))(x) \newline
 \end{align*}
 $$
-Wherein for each batch, we compute:
+
+Where $\{ \theta_i \in \Theta : \forall i, j:  \theta_i \neq \theta_j \}$ are indexed parameter vectors, wherein And we denote parameter-shared, depthwise recurrence via:
 
 $$
-\begin{aligned}
-\textbf{Algorithm 1:} &\ \text{Pseudocode for } \textsc{ASURA} \\
-1:\ &\ \textbf{Input: } \text{parameters } \theta,\ \text{input } X,\ \text{iterations } i \\
-2:\ &\ \textbf{for } \mathrm{batch\_idx} = 1, 2, \ldots\ \textbf{do} \\
-3:\ &\ X_{\mathrm{in}} \leftarrow \operatorname{embed\_and\_ln}(X) \\
-4:\ &\ \mathrm{latent} \leftarrow X_{\mathrm{in}} \\
-5:\ &\ \textbf{for } \mathrm{iteration} = 0, 1, \ldots, i\ \textbf{do} \\
-6:\ &\ \hat{y}_{\mathrm{proj}} \leftarrow \operatorname{proj\_and\_concat}([\mathrm{latent}, X_{\mathrm{in}}]) \\
-7:\ &\ \mathrm{latent} \leftarrow \textit{ASURA}(\hat{y}_{\mathrm{proj}}) \\
-8:\ &\ \mathrm{latent} \leftarrow \operatorname{LN}(\mathrm{latent}) \\
-9:\ &\ \textbf{end for} \\
-10:\ &\ \textbf{end for}
-\end{aligned}
+\begin{align*}
+  \hat{X}_{i + 1} = X_{1} + \textit{ASURA}\( \hat{X}_i \) 
+\end{align*}
 $$
+
+However, this naive formulation is unstable. Below we present tricks 
+
+## Decoupled `LayerNorm`
+
+
+![Decoupled/Unshared Layernorms](asura_unshared_LN.drawio.svg#full "Ensure each iteration is normalized uniquely.")
 
 ## Notes on Efficiency
 
