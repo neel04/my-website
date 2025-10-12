@@ -201,6 +201,12 @@ a:hover {
   color: var(--hover-color);
 }
 
+/* Center the caption link under W&B embeds */
+.wandb-embed p {
+  text-align: center;
+  margin-top: 0.4rem;
+}
+
 .heading .anchor {
   visibility: hidden;
   text-decoration: none;
@@ -212,6 +218,12 @@ a:hover {
 .heading .anchor:focus,
 .heading .anchor:focus-visible {
   visibility: visible;
+}
+
+/* Plotly container tweaks */
+.plotly-embed {
+  width: 100%;
+  min-height: 420px;
 }
 
 #dark-mode-toggle {
