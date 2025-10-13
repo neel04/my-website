@@ -132,7 +132,9 @@ Astute readers would notice that this is similar to the recall mechanism introdu
 
 2. By relaxing parameter-sharing on $W\_{\mathrm{proj}}^t$, we increase the expressiveness of the model by *coupling* the projection to each iteration.
 
-3. This operation also downsamples the concatenated inputs, thus improving parameter-count and FLOPs by reducing the embedding dimension by half.
+3. By directly injecting useful information as an explicit input for every iteration, we preserve the residual stream "bandwidth" [^17] by minimizing the amount of information the network has to propogate through its latent space across iterations. 
+
+4. This operation also downsamples the concatenated inputs, thus improving parameter-count and FLOPs by reducing the embedding dimension by half.
 
 Additionally, the input-dependence injects some dynamic behavior which can (hopefully) improve stability and act as a weak "gate" of sorts, to promote interactions between the latent and the original prompt that the current iteration needs.
 
@@ -178,16 +180,9 @@ This is effectively performing standard pre-`LN` for every $\mathcal{B}_i$ but a
 
 In our sweeps, we didn't notice any major performance improvements - however for larger runs, it helped tremendously in avoiding exploding gradients and alleviated loss spikes.
 
+![Loss curve for a 350M UT](./loss_curve_350M_x3_transparent.svg#light "Sample loss curve for a ~1B (350M * 3 iters) ASURA")
 
-<div class="wandb-embed" aria-label="Interactive W&B panel: Decoupled LayerNorms loss">
-  <iframe
-    src="https://wandb.ai/neel/ReAct_Jax/runs/3i_FW_100B_6/panel/z2473zhjk?nw=nwuserneel"
-    loading="lazy"
-    style="width: 100%; height: 520px; border: 0;"
-    title="W&B Panel: Decoupled LayerNorms loss">
-  </iframe>
-  <p><a href="https://wandb.ai/neel/ReAct_Jax/runs/3i_FW_100B_6/panel/z2473zhjk?nw=nwuserneel" target="_blank" rel="noopener">Open interactive panel in W&B</a></p>
-</div>
+![Loss curve for a 350M UT](./loss_curve_dark.svg#dark "Sample loss curve for a ~1B (350M * 3 iters) ASURA")
 
 Continuing from equation $(3)$, we now make the iteration dependence explicit by folding the per‑iteration post‑normalizations into the block. Define the depthwise block at iteration $i$ as $\operatorname{ASURA}\_i(\cdot)$ composed of alternating layers and iteration‑specific norms:
 
@@ -208,6 +203,76 @@ $$
 
 In this equation $(4)$, the $\operatorname{LN}\_i^{(\ell)}$ denotes the post‑`LayerNorm` associated with layer $\ell$ at iteration $i$ and the operator now explicitly consumes the iteration index.
 
+### Parameter Relaxation
+
+Another aspect of training large, recursive architectures is the distinct lack of flexibility. Unlike conventional transformers, UTs are constrained by construction. However, for various reasons we want an ability to dynamically adjust the type of computation performed per iteration.
+
+The intuition behind this choice is rooted in circuit theory. At every recursive application, we often want to address a subset of the circuits. There's been a substantial body of work [^16] [^17] that suggests that complex circuits are often formed via the "atomic" operations performed by the composition of attention heads.
+
+We take inspiration from a tangential work [^18]. We "relax" the static parameters by injecting a non-parameter shared low-rank adapter. Thus, we have control over the amount of "fresh" parameters injected and provide a way for the network to modulate its own outputs in a data dependent fashion.
+
+Our low-rank adapter of choice is the `ABBA` [^19] family of adapters. `ABBA` exploits the fact that high-rank updates can be achieved by the hadamard operator (denoted $\odot$) via taking inspiration from [HiRA](https://openreview.net/forum?id=TwJrTz9cRS) line of work. Effectively, the formulation is:
+
+$$
+\begin{aligned}
+  \text{HiRA: }\Delta W = W\_0 \odot (BA)
+\end{aligned}
+$$
+
+leveraging the property that $W\_1, W\_2$ with ranks $r\_1$ and $r\_2$ respectively "satisfy $\text{rank}(W\_1 \odot W\_2) \leq r\_1 \cdot r\_2$" and thus allowing us to greatly increase the effective rank of the operation via cheap elementwise operations easily parallelizable on modern accelerators.
+
+However this fails to improve expressivity as we're still restricted to the subspace defined by $W\_0$.
+
+`ABBA` works around this by parameterizing the projections to be learnable thus achieving effective rank of $r\_1 \cdot r\_2$ and improving expressivity.
+
+$$
+\begin{aligned}
+  \text{ABBA: }\Delta W = \gamma (B\_1 A\_1) \odot (B\_2 A\_2)
+\end{aligned}
+$$
+
+where $\gamma \in \mathbb{R}$ is the scaling factor for stability. 
+
+![ABBA Block](asura_abba_lora.drawio.svg#full "An `ABBA` block. Figure recreated from the paper for aesthetic purposes.")
+
+In practice, to avoid $m \times n$ matrix materialization we leverage the Khatri-Rao factorization as presented in the paper to compute the product in a memory efficient manner:
+
+$$
+\begin{aligned}
+(B\_2 A\_2)
+  = \underbrace{(B\_1 \odot\_r B\_2)}\_{m\times r\_1 r\_2}\
+    \underbrace{\bigl(A\_1^{\top} \odot\_r A\_2^{\top}\bigr)^{\top}}\_{r\_1 r\_2 \times n}
+\end{aligned}
+$$
+
+Additionally, `ABBA` assumes we're operating in the conventional fine-tuning regime wherein the original model weights are frozen. Thus, we discard the original authors' suggestion to carefully initialize the `ABBA` adapter via the `SVD`. Instead, we simply treat the adapter layers as trainable - similar to the other layers.
+
+Thus, integrating the adapter in our blocks, $\mathcal{B}_i$ looks like:
+
+![Parameter relaxation](./asura_adapter.drawio.svg#full "Parameter relaxation via `ABBA` blocks")
+
+## Pseudocode
+
+Putting everything together, we get something similar to this:
+
+
+$$
+\begin{aligned}
+&\textbf{Pseudocode for ASURA} \newline
+&\textbf{Input: } \text{parameters } \theta,\; \text{input } X,\; \text{iterations } i \newline
+&\textbf{for } \texttt{batch\\_idx} = 1,2,\ldots \textbf{ do} \newline
+&\quad X\_{\mathrm{in}} \leftarrow \texttt{embed\\_and\\_ln}(X) \newline
+&\quad \texttt{latent} \leftarrow X\_{\mathrm{in}} \newline
+&\quad \textbf{for } \texttt{iteration} = 0,1,\ldots, i \textbf{ do} \newline
+&\qquad \hat{y}\_{\mathrm{proj}} \leftarrow \texttt{proj\\_and\\_concat}(\left[\texttt{latent},\; X\_{\mathrm{in}}\right]) \newline
+&\qquad \texttt{latent} \leftarrow \operatorname{ASURA}\_i(\hat{y}\_{\mathrm{proj}}) \newline
+&\qquad \texttt{latent} \leftarrow \texttt{LayerNorm}(\texttt{latent}) \newline
+&\quad \textbf{end for} \newline
+&\textbf{end for}
+\end{aligned}
+$$
+
+
 ## Notes on Efficiency
 
 - Backprop through \(i\) iterations increases memory roughly with context length, batch size, hidden dim, and layers. We use activation checkpointing/scan-style rematerialization to trade compute for memory (treeverse checkpointing with known horizon \(i\)).
@@ -220,6 +285,19 @@ This project is very much a WIP. However, there are still some theoretical probl
 1. Because at each iteration, the $W\_{\mathrm{proj}}$ is unique, not shared, we cannot compute more iterations than the network has seen during training at inference time. In practice this is not an issue since the network can't handle OOD iterations anyways. However, follow-up work aims to address this issue and allow UTs to extrapolate for OOD number of iterations.
 
 # Appendix
+
+- Gory training details
+
+<div class="wandb-embed" aria-label="Interactive W&B panel: Decoupled LayerNorms loss">
+  <iframe
+    src="https://wandb.ai/neel/ReAct_Jax/runs/3i_FW_100B_6/panel/z2473zhjk?nw=nwuserneel"
+    loading="lazy"
+    style="width: 100%; height: 520px; border: 0;"
+    title="W&B Panel: Decoupled LayerNorms loss">
+  </iframe>
+  <p><a href="https://wandb.ai/neel/ReAct_Jax/runs/3i_FW_100B_6/panel/z2473zhjk?nw=nwuserneel" target="_blank" rel="noopener">Open interactive panel in W&B</a></p>
+</div>
+
 
 # References
 
@@ -252,3 +330,11 @@ This project is very much a WIP. However, there are still some theoretical probl
 [^14]: The Serial Scaling Hypothesis. 2025. [link](https://arxiv.org/abs/2507.12549)
 
 [^15]: On the Biology of a Large Language Model. 2025. [link](https://transformer-circuits.pub/2025/attribution-graphs/biology.html#dives-cot)
+
+[^16]: https://arxiv.org/abs/1803.03635. 2018. [link](https://arxiv.org/abs/1803.03635)
+
+[^17]: A Mathematical Framework for Transformer Circuits. 2021. [link](https://transformer-circuits.pub/2021/framework/index.html)
+
+[^18]: Relaxed Recursive Transformers: Effective Parameter Sharing with Layer-wise LoRA. 2024. [link](https://arxiv.org/abs/2410.20672)
+
+[^19]: ABBA: Highly Expressive Hadamard Product Adaptation for Large Language Models. 2025. [link](https://arxiv.org/abs/2505.14238v1)
