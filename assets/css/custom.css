@@ -248,3 +248,62 @@ header {
 .header .flex p.small {
   font-size: 0.95em;
 }
+
+/* Algorithm box styling (Overleaf-like) */
+.algorithm {
+  border: 1px solid var(--code-border);
+  border-radius: 8px;
+  background: var(--code-background);
+  margin: 1.5rem 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.algorithm-title {
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid var(--code-border);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.algorithm-body {
+  position: relative;
+  padding: 0.8rem 0.9rem 0.9rem 1.2rem;
+  /* subtle horizontal guide lines */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 28px,
+    rgba(127,127,127,0.08) 29px
+  );
+}
+
+/* Vertical rule at the left, like algorithm2e */
+.algorithm-body::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 8px;
+  width: 3px;
+  background: var(--code-border);
+  border-radius: 2px;
+}
+
+.algorithm-footer {
+  padding: 0.4rem 0.9rem 0.7rem;
+  border-top: 1px solid var(--code-border);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--content-secondary);
+}
+
+/* Keep KaTeX block tight inside the box */
+.algorithm-body .katex-display {
+  margin: 0;
+  text-align: left !important;
+}
+
+.algorithm-body .katex-display > .katex {
+  text-align: left !important;
+}
