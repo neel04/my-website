@@ -207,6 +207,32 @@ a:hover {
   margin-top: 0.4rem;
 }
 
+/* Light theme: add a subtle frame similar to TOC */
+/* Light theme: remove wrapper halo; style only the bottom caption bar */
+/* Revert: use the same full frame style in both themes */
+html[data-theme="light"] .wandb-embed {
+  background-color: var(--code-background);
+  border: 1px solid var(--code-border);
+  /* Make the border appear thinner by reducing its opacity */
+  border-color: color-mix(in srgb, var(--code-border) 40%, transparent);
+  border-radius: 8px;
+  padding: 0.25rem;
+}
+
+/* W&B embeds: approximate dark mode via invert in site dark theme */
+html[data-theme="dark"] .wandb-embed {
+  background-color: var(--code-background);
+  border: 1px solid var(--code-border);
+  border-color: color-mix(in srgb, var(--code-border) 40%, transparent);
+  border-radius: 8px;
+  padding: 0.25rem;
+}
+
+html[data-theme="dark"] .wandb-embed iframe {
+  /* Invert the light-themed iframe to better match dark mode */
+  filter: invert(1) hue-rotate(180deg) contrast(0.92) saturate(0.9) brightness(0.9);
+}
+
 .heading .anchor {
   visibility: hidden;
   text-decoration: none;
