@@ -13,13 +13,13 @@ math: true
 
 ## Abstract
 
-**ASURA** is a simple, recursive variant of Universal Transformers [^3] aimed at language modeling, with improved stability and scalability. It applies a shared block across depth (recursion over iterations), augmented with long skip connections and extra normalizations. In our setup, it achieves strong performance while preserving approximately the same relative FLOPs.
+**ASURA** is a simple, recursive variant of Universal Transformers [^3] aimed at language modeling, with improved stability and scalability. It applies a shared block across depth (recursion over iterations), augmented with long skip connections and extra normalizations. In our setup, it achieves strong performance, outperforming our baselines while preserving approximately the same relative FLOPs w.r.t standard UTs.
 
 ## Motivation
 
-While the resurgence of interest in recursive architectures is warranted, current literature still lacks a rigorous treatment of recursion strategies. Industry and academia often presume that repeatedly applying the network $n$ times is sufficient. We see no reason to believe that naive recursion is optimal.
+There has been a resurgence of interest in recursive architectures recently. However, current literature still lacks a rigorous treatment of recursion strategies. Industry and academia alike often presume that repeatedly applying the network $n$ times naively is often sufficient. We see no reason to believe that this is optimal. `ASURA` is our effort to develop tricks & techniques to improve recursive architectures and push them to be competitive with vanilla transformers.
 
-This prompts the question: why should we focus on recursive architectures in the first place?
+But why should we focus on recursive architectures in the first place? we highlight some of the advantages below:
 
 - Parameter scaling in isolation is insufficient; robust multi-step reasoning and compositional inference demand greater depth and iterative computation - in line with the serial hypothesis [^14].
 
@@ -33,7 +33,7 @@ Conventional UTs (Universal Transformers) can be unstable, can diverge at scale 
 
 ## Related Work
 
-- **Recursive/parameter‑shared architectures**. Universal Transformers add depth‑wise sharing and ACT [^3]; Deep‑Equilibrium Networks adopt a fixed‑point, “infinite‑depth” view [^4]. Neural GPU demonstrates algorithmic generalization with techniques applied to convolutional networks [^5], while DTNet/Deep‑Thinking highlights the utility of the `recall` mechanism for enabling stability and OOD length extrapolation [^6].
+- **Recursive/parameter‑shared architectures**. Universal Transformers add depth‑wise sharing and ACT [^3]; Deep‑Equilibrium Networks adopt a fixed‑point, “infinite‑depth” view [^4]. Neural GPU demonstrates algorithmic generalization with techniques applied to convolutional networks [^5], while DTNet/Deep‑Thinking highlights the utility of the `recall` mechanism for enabling stability and OOD length extrapolation [^6]. Recently, there has been a rise in interest for hierarchial methods [^25] [^26] [^23] as well, which has proven to work well in simpler domains (i.e gridworlds or ARC-AGI) but their effectiveness in language modelling remains to be seen.
 
 - **Adaptive computation**. Chain‑of‑Thought prompting increases output length to approximate extra compute [^7], but raises faithfulness and attribution concerns [^8] [^11] and can aggravate exposure‑bias errors in autoregression [^9]. Internal recursion (parameter sharing + iterative refinement) keeps compute in the latent space and, with the right normalizations and skip connections, can be more stable.
 
@@ -69,7 +69,7 @@ $$
 \operatorname{Attention}(Q,K,V) = \operatorname{softmax}\left(\frac{QK^\top}{\sqrt{d}}\right) V
 $$
 
-We define a block (pre‑norm, concise form) as:
+We use a pre‑norm block:
 
 $$
 \mathcal{B}(x;\theta) = \operatorname{LayerNorm}\big(\operatorname{MLP}(\operatorname{MHA}(\operatorname{LayerNorm}(x)))\big)
@@ -78,7 +78,7 @@ $$
 and we use the standard GeLU activation:
 
 $$
-\sigma_{\text{GeLU}}(x) = \tfrac{1}{2} \, x \, \Big(1 + \tanh\big(\sqrt{2/\pi}\,(x + 0.044715\,x^3)\big)\Big)
+\sigma_{\text{GeLU}}(x) = \tfrac{1}{2} \\, x \\, \Big(1 + \tanh\big(\sqrt{2/\pi}\\,(x + 0.044715\\,x^3)\big)\Big)
 $$
 
 
@@ -104,7 +104,7 @@ $$
 \end{align}
 $$
 
-However, this naive recursive formulation isn't optimal. Below we present how we derived the $\textit{ASURA}$ architecture starting from equation $(1)$.
+However, this naive recursive formulation isn't optimal. Next, we derive the $\textit{ASURA}$ architecture starting from equation $(1)$.
 
 ### Deep Residual
 
@@ -118,25 +118,27 @@ $$
 
 ![ProjConcat: project-and-concatenate long skip](asura_concat_proj.drawio.svg#full "ProjConcat: concatenate residuals, then project with W_proj.")
 
-Here, $X_i$ denotes the $i$‑th residual of the network. In practice, for input $X_0$:
+Compared to naive recurrence, this reduces information bottlenecks in the residual stream by providing a direct, projected pathway from the input embedding and the previous latent, which improves gradient flow and utilization across iterations.
+
+Here, $X_i$ denotes the $i$‑th residual of the network. In practice (for input $X_0$):
 
 $$
-\hat{X}\_{\mathrm{skip}}^t = \Big( \operatorname{Emb}(X_{0}) \oplus \hat{X}\_{\mathrm{t - 1}} \Big) \times W_{\mathrm{proj}}^k
+\hat{X}\_{\mathrm{skip}}^i = \Big( \operatorname{Emb}(X_{0}) \oplus \hat{X}\_{\mathrm{i - 1}} \Big) \times W_{\mathrm{proj}}^k
 $$
 
-for recursive iteration $t \in \[1, \text{max\\_iters}\]$ and $\operatorname{Emb}$ is the standard embedding operator.
+for recursive iteration $i \in \[1, \text{max\\_iters}\]$ and $\operatorname{Emb}$ is the standard embedding operator.
 
 Note the similarity to the recall mechanism introduced in [^6] and the "Prelude" block in [^13]. However, Deep Residual is a more expressive way to perform input injection: 
 
 1. Instead of simply propagating the `embed`-ed $X_0$, we downsample its linear combination with the previous latent $X\_{t-1}$, allowing the network to dynamically adjust the information it wants to retain for the current iteration.
 
-2. By relaxing parameter-sharing on $W\_{\mathrm{proj}}^t$, we increase the expressiveness of the model by *coupling* the projection to each iteration.
+2. By relaxing parameter-sharing on $W\_{\mathrm{proj}}^i$, we increase the expressiveness of the model by *coupling* the projection to each iteration.
 
 3. By directly injecting useful information as an explicit input for every iteration, we preserve the residual stream "bandwidth" [^17] by minimizing the amount of information the network has to propagate through its latent space across iterations. 
 
 4. This operation also downsamples the concatenated inputs, thus improving parameter-count and FLOPs by reducing the embedding dimension by half.
 
-Additionally, the input‑dependence injects some dynamic behavior which can improve stability and act as a weak "gate" of sorts, to promote interactions between the latent and the original prompt that the current iteration needs.
+Additionally, the input‑dependence injects some dynamic behavior which can improve stability and act as a weak gate, promoting interactions between the latent and the original prompt that the current iteration needs.
 
 From this, we can now rewrite equation $(1)$ as:
 
@@ -149,6 +151,7 @@ $$
 ### Decoupled Per-iteration `LayerNorm`
 
 Prior work [^3] [^5] [^6] typically does not design the architecture around `LayerNorm`s, assuming that recursing for $n$ iterations and optimization will handle normalization and scaling during training.
+However, activation statistics can drift across iterations (internal covariate shift), so per‑iteration normalization helps stabilize training [^27].
 
 However, we'd like to point out that there's little cost in "un-sharing" the normalization layers in return for stability. Additionally, it doesn't complicate the architecture design substantially and is a relatively simple and cheap way to accomplish our goal.
 
@@ -178,7 +181,7 @@ This is effectively performing standard pre-`LN` for every $\mathcal{B}_i$ but a
 
 ![Block level norm unsharing](asura_block_ln.drawio.svg#full "Pre-`LN` is still standard, i.e., unique for each block but implicitly shared across every iteration.")
 
-In our sweeps, we didn't notice major performance improvements. However, for larger runs, it helped tremendously in avoiding exploding gradients and alleviating loss spikes.
+In our sweeps, we didn't notice major performance improvements. However, for larger runs, it reduced exploding gradients and loss spikes.
 
 ![Loss curve for a 350M UT](./loss_curve_350M_x3_transparent.svg#light "Sample loss curve for a ~`1B` (350M * 3 iters) `ASURA`")
 
@@ -205,13 +208,13 @@ In this equation $(4)$, the $\operatorname{LN}\_i^{(\ell)}$ denotes the post‑`
 
 ### Parameter Relaxation
 
-Another aspect of training large, recursive architectures is their limited flexibility. Unlike conventional transformers, UTs are constrained by construction. However, for various reasons we want an ability to dynamically adjust the type of computation performed per iteration [^13].
+Another aspect of training large, recursive architectures is their limited flexibility. Unlike conventional transformers, UTs are constrained by construction. We seek to dynamically adjust the type of computation performed per iteration [^13]. Different iterations tend to target different subcircuits; LoRA‑style adapters provide iteration‑specific capacity.
 
 The intuition behind this choice is rooted in circuit theory. At every recursive application, we often want to address a subset of the circuits. There's been a substantial body of work [^16] [^17] that suggests that complex circuits are often formed via the "atomic" operations performed by the composition of attention heads.
 
 We take inspiration from a tangential work [^18]. We "relax" the static parameters by injecting a non‑parameter‑shared low‑rank adapter. Thus, we have control over the amount of "fresh" parameters injected and provide a way for the network to modulate its own outputs in a data‑dependent fashion.
 
-Our low-rank adapter of choice is the `ABBA` [^19] family of adapters. `ABBA` exploits the fact that high-rank updates can be achieved by the Hadamard operator (denoted $\odot$), inspired by the HiRA line of work [HiRA](https://openreview.net/forum?id=TwJrTz9cRS). Effectively, the formulation is:
+Our low-rank adapter of choice is the `ABBA` [^19] family of adapters. `ABBA` exploits the fact that high-rank updates can be achieved by the Hadamard operator (denoted $\odot$), inspired by the [HiRA](https://openreview.net/forum?id=TwJrTz9cRS) line of work. Effectively, the formulation is:
 
 $$
 \begin{aligned}
@@ -221,7 +224,7 @@ $$
 
 leveraging the property that $W\_1, W\_2$ with ranks $r\_1$ and $r\_2$ respectively "satisfy $\text{rank}(W\_1 \odot W\_2) \leq r\_1 \cdot r\_2$" and thus allowing us to greatly increase the effective rank of the operation via cheap elementwise operations easily parallelizable on modern accelerators.
 
-However, this does not improve expressivity because we remain restricted to the subspace defined by $W\_0$.
+However, this does not improve expressivity because we remain restricted to the column space defined by $W\_0$.
 
 `ABBA` addresses this by parameterizing the projections to be learnable, thus achieving an effective rank of $r\_1 \cdot r\_2$ and improving expressivity.
 
@@ -261,17 +264,19 @@ At a high level, the forward pass is:
 
 $$
 \begin{aligned}
-&\textbf{Pseudocode for ASURA} \newline
-&\textbf{Input: } \text{parameters } \theta, \\; \text{input } X,\; \text{iterations } i \newline
-&\textbf{for } \texttt{batch\\_idx} = 1,2,\ldots \textbf{ do} \newline
+&\texttt{Pseudocode for ASURA} \newline
+&\texttt{Input: } \text{parameters } \theta, \\; \text{input } X,\; \text{iterations } i \newline
+&\texttt{for } \text{batch\\_idx} = 1,2,\ldots \texttt{ do} \newline
 &\quad X\_{\mathrm{in}} \leftarrow \texttt{embed\\_and\\_ln}(X) \newline
 &\quad \texttt{latent} \leftarrow X\_{\mathrm{in}} \newline
-&\quad \textbf{for } \texttt{iteration} = 0,1,\ldots, i \textbf{ do} \newline
+&\quad \texttt{for } \text{iteration} = 0,1,\ldots, i \texttt{ do} \newline
 &\qquad \hat{y}\_{\mathrm{proj}} \leftarrow \texttt{proj\\_and\\_concat}(\left[\texttt{latent}, \\; X\_{\mathrm{in}}\right]) \newline
 &\qquad \texttt{latent} \leftarrow \operatorname{ASURA}\_i(\hat{y}\_{\mathrm{proj}}) \newline
 &\qquad \texttt{latent} \leftarrow \texttt{LayerNorm}(\texttt{latent}) \newline
-&\quad \textbf{end for} \newline
-&\textbf{end for}
+&\quad \texttt{end for} \newline
+&\texttt{end for} \\newline
+&\texttt{logits} \\leftarrow \\texttt{head}(\\texttt{latent}) \\newline
+&\texttt{loss} \\leftarrow \\texttt{CrossEntropy}(\\texttt{logits}, \\texttt{target})
 \end{aligned}
 $$
 
@@ -281,11 +286,11 @@ $$
 
 ## Notes on Efficiency
 
-Since we're relying on simple Backpropagation-through-time (BPTT) for training an $i$‑iteration‑deep recursive architecture, we suffer from excessive memory costs — on the order of $\approx \mathcal{O}(isbhL)$ [^20] where $s$ is the context length, $b$ is the batch size, $h$ is the hidden dimension size, and $L$ denotes the number of layers in the model.
+Since we're relying on simple Backpropagation-through-time (BPTT) for training an $i$‑iteration‑deep recursive architecture, this incurs memory costs on the order of $\approx \mathcal{O}(isbhL)$ [^20], where $s$ is the context length, $b$ is the batch size, $h$ is the hidden dimension size, and $L$ denotes the number of layers in the model.
 
 To alleviate this, we use activation checkpointing/scan-style rematerialization to trade compute for memory (treeverse checkpointing with known horizon $i$).
 
-Thus, we opt for a checkpointed version of a $\texttt{scan}$ to trade off compute for memory by rematerializing/recomputing intermediate activations instead of storing them in memory.
+Thus, we opt for a checkpointed version of a $\texttt{scan}$ to trade off compute for memory by rematerializing intermediate activations instead of storing them in memory.
 
 This is accomplished by leveraging the offline variant of recursive "classical treeverse" checkpointing algorithm as implemented in the excellent [equinox](https://github.com/patrick-kidger/equinox) library as part of its internal toolkit [here](https://github.com/patrick-kidger/equinox/blob/cf1cf3310c870f4255e4d2cede770c8af3ae00bf/equinox/internal/_loop/loop.py#L131).
 
@@ -303,8 +308,11 @@ This project is very much a WIP. However, there are still some theoretical probl
 
 - At each iteration, the $W\_{\mathrm{proj}}$ and the `ABBA` adapters are unique, i.e., not shared across iterations.
 
-Thus, at inference we cannot compute more iterations than the network has seen during training; in practice this is acceptable, as the network cannot handle OOD iterations anyway. Follow‑up work aims to address this limitation and allow UTs to extrapolate to OOD numbers of iterations.
+Thus, at inference we cannot compute more iterations than the network has seen during training; in practice, however, this is acceptable, as the network cannot handle OOD iterations anyway. Follow‑up work aims to address this limitation and allow UTs to extrapolate for OOD iteration counts.
 
+Additionally, because of the way we've built our accelerators, we benefit from batching - thus computing a static, pre-computed amount of iterations is more performant than resorting to `bsz=1`. HRM/TRM [^23] [^26] style models for instance adopt this for tackling the [ARC-AGI](https://arcprize.org/arc-agi) challenge. 
+
+Still, we recognize that this is a limitation especially if we wish to achieve results in a similar vein to Geiping et al. [^13]. Follow‑up work aims to address this limitation and allow UTs to extrapolate to OOD numbers of iterations.
 
 ## Future Ideas?
 
@@ -316,23 +324,23 @@ While in this work we use the traditional, `LoRA`‑like adapter formulation, mo
 
 This can be done through other, more elegant formulations.
 
-For example, one could naively imagine an attention-like mechanism except applied depthwise - treating each layers' weights as a token in the sequence and matching against our "key" - the adapter's latent.
+For example, one could naively imagine an attention-like mechanism except applied depthwise — treating each layer's weights as a token in the sequence and matching against our "key" — the adapter's latent.
 
 This would treat it as a more classical match & retrieval problem wherein we consume the adapter information and previous latent, producing a weighted combination of each neuron's outputs. ([Hopfield](https://arxiv.org/abs/2008.02217) networks?)
 
-One can easily imagine approximations to this mechanism performing very well. Given more work in MechInter and especially studying how circuits form in DNNs, perhaps this would be a viable direction in the future. 
+One can easily imagine approximations to this mechanism performing well by better matching adapter selection to subcircuit activation. Given more work in MechInter and especially studying how circuits form in DNNs, perhaps this would be a viable direction in the future. 
 
-- **Score Function:** UTs have a weak correspondence with traditional diffusion models. Is there a lens via which we can view each recursive iteration? If we take the conventional score‑function theoretical POV, are there any specific inductive biases/constraints/priors we can impose on each iteration to make it more amenable to scaling and improve performance?
+- **Score Function:** UTs have a weak correspondence with traditional diffusion models. Is there a lens via which we can view each recursive iteration? If we take the conventional score‑function perspective, are there any specific inductive biases/constraints/priors we can impose on each iteration to make it more amenable to scaling and improve performance?
 
 Is there an equivalence that allows us to unify the fixed‑point DEQ formulation and diffusion models to reap both their benefits without resorting to solvers or expensive denoising‑based sampling procedures?
 
-- **Holy Grail:** Training UTs is often a sore point for many since in practice it's expensive. Could we perhaps train vanilla LLMs with some specific recipe to embed certain inductive biases that make it easier to convert them to a recursive architecture later on?
+- **Holy Grail:** Training UTs is often a sore point for many since in practice it's expensive. Could we perhaps train vanilla LLMs with some specific recipe to embed certain inductive biases that make it easier to convert them into a recursive architecture later on?
 
 We know Knowledge acquisition isn't hard - so if we're completely focusing on reasoning it doesn't make sense to start afresh. If we can transfer most of the knowledge from vanilla LMs into recursive architectures, it would provide an easy boost for pre-training and make them cheap enough to scale.
 
 - **Adaptive Time-Computation:** Extending these models to unbounded iterations is a hard problem. Only a handful of works have attempted [^13] to do so and have (somewhat) succeeded.
 
-However, it's clear that latent-adaptive computation unlocks a lot of benefits for reasoning. There are powerful ideas, such as parallel-time adaptive computation and MCTS-styled approaches that might unlock as *we* adopt this paradigm.
+However, it's clear that latent-adaptive computation unlocks a lot of benefits for reasoning. There are powerful ideas, such as parallel-time adaptive computation and MCTS-styled approaches, that may emerge as this paradigm is adopted.
 
 Geiping et al. [^13] use truncated BPTT (i.e., backprop only the last iteration) which is efficient to train, however comes with severe performance penalties. While the `n + k` style training recipe works for extrapolating to OOD iterations, it's clearly not ideal.
 
@@ -412,34 +420,38 @@ If you found this technical report useful, you can cite us by:
 
 [^9]: Bengio et al. “Scheduled Sampling for Sequence Prediction with Recurrent Neural Networks.” 2015. [link](https://arxiv.org/abs/1506.03099)
 
-[^10]: Discussion on length extrapolation and positional encoding limitations (e.g., RoPE/PI limits). 2023. [link](https://arxiv.org/abs/2305.19466)
+[^10]: Kazemnejad et al. “Discussion on length extrapolation and positional encoding limitations (e.g., RoPE/PI limits).” 2023. [link](https://arxiv.org/abs/2305.19466)
 
 [^11]: Reasoning models don't always say what they think. 2025. [link](https://www.anthropic.com/research/reasoning-models-dont-say-think)
 
-[^12]: Reasoning with Latent Thoughts: On the Power of Looped Transformers. 2024. [link](https://arxiv.org/abs/2502.17416)
+[^12]: Saunshi et al. “Reasoning with Latent Thoughts: On the Power of Looped Transformers.” 2024. [link](https://arxiv.org/abs/2502.17416)
 
-[^13]: Scaling up Test-Time Compute With Latent Reasoning: A Recurrent Depth Approach. 2025. [link](https://arxiv.org/abs/2502.05171)
+[^13]: Geiping et al. “Scaling up Test-Time Compute With Latent Reasoning: A Recurrent Depth Approach.” 2025. [link](https://arxiv.org/abs/2502.05171)
 
-[^14]: The Serial Scaling Hypothesis. 2025. [link](https://arxiv.org/abs/2507.12549)
+[^14]: Liu et al. “The Serial Scaling Hypothesis.” 2025. [link](https://arxiv.org/abs/2507.12549)
 
 [^15]: On the Biology of a Large Language Model. 2025. [link](https://transformer-circuits.pub/2025/attribution-graphs/biology.html#dives-cot)
 
-[^16]: https://arxiv.org/abs/1803.03635. 2018. [link](https://arxiv.org/abs/1803.03635)
+[^16]: Frankle & Carbin. 2018. [link](https://arxiv.org/abs/1803.03635)
 
 [^17]: A Mathematical Framework for Transformer Circuits. 2021. [link](https://transformer-circuits.pub/2021/framework/index.html)
 
-[^18]: Relaxed Recursive Transformers: Effective Parameter Sharing with Layer-wise LoRA. 2024. [link](https://arxiv.org/abs/2410.20672)
+[^18]: Bae et al. “Relaxed Recursive Transformers: Effective Parameter Sharing with Layer-wise LoRA.” 2024. [link](https://arxiv.org/abs/2410.20672)
 
-[^19]: ABBA: Highly Expressive Hadamard Product Adaptation for Large Language Models. 2025. [link](https://arxiv.org/abs/2505.14238v1)
+[^19]: Singhal et al. “ABBA: Highly Expressive Hadamard Product Adaptation for Large Language Models.” 2025. [link](https://arxiv.org/abs/2505.14238v1)
 
 [^20]: Transformer Math 101. 2023. [link](https://blog.eleuther.ai/transformer-math/)
 
-[^21]: Tree-Structured Parzen Estimator: Understanding Its Algorithm Components and Their Roles for Better Empirical Performance. 2023. [link](https://arxiv.org/abs/2304.11127)
+[^21]: Watanabe et al. “Tree-Structured Parzen Estimator: Understanding Its Algorithm Components and Their Roles for Better Empirical Performance.” 2023. [link](https://arxiv.org/abs/2304.11127)
 
-[^22]: RoFormer: Enhanced Transformer with Rotary Position Embedding. 2021. [link](https://arxiv.org/abs/2104.09864)
+[^22]: Su et al. “RoFormer: Enhanced Transformer with Rotary Position Embedding.” 2021. [link](https://arxiv.org/abs/2104.09864)
 
-[^23]: Hierarchical Reasoning Model. 2025. [link](https://arxiv.org/abs/2506.21734)
+[^23]: Wang et al. “Hierarchical Reasoning Model.” 2025. [link](https://arxiv.org/abs/2506.21734)
 
 [^24]: Continuous Thought Machines. 2025, [link](https://sakana.ai/ctm/)
 
 [^25]: Hierarchical Temporal Memory. 20xx. [link](https://en.wikipedia.org/wiki/Hierarchical_temporal_memory)
+
+[^26]: Jolicoeur‑Martineau. “Less is More: Recursive Reasoning with Tiny Networks.” 2025. [link](https://arxiv.org/abs/2510.04871)
+
+[^27]: Ioffe & Szegedy. “Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift.” 2015. [link](https://proceedings.mlr.press/v37/ioffe15.html)
