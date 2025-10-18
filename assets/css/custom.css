@@ -64,20 +64,32 @@ html[data-theme="light"] {
 }
 
 
-html code{
-  font-family: 'JetBrains Mono', monospace;
+/* Prefer JetBrains Mono for all code if available */
+html code,
+pre,
+.chroma,
+.chroma code,
+code {
+  font-family: 'SF Mono', SFMono-Regular, ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", 'JetBrains Mono', monospace !important;
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'calt' 0;
 }
 
-html[data-theme="light"] code {
-  background-color: rgb(241, 231, 189);
-  border-color: rgb(112, 102, 94);
-}
+/* Avoid overriding code color palette globally; inline code handled below */
 
+/* Use theme defaults for pre background/border; don't override text color */
 html[data-theme="light"] pre {
-  background-color: rgb(199, 51, 51);
-  color: #ebdbb2;
   border: 1px solid rgb(112, 102, 94);
 }
+
+/* Tighter line spacing in code blocks */
+pre,
+pre code,
+.chroma { line-height: 1.1em !important; }
+
+/* Slightly smaller font size for code blocks only (not inline code) */
+pre code,
+.chroma { font-size: 0.9em !important; }
 
 
 html[data-theme="light"] p code {
@@ -112,20 +124,15 @@ html[data-theme="dark"] aside.toc {
   margin-bottom: 0.2em; /* Add space between links */
 }
 
+/* Avoid forcing colors inside code/pre so syntax tokens can show colors */
 html[data-theme="light"] pre,
-html[data-theme="light"] pre *,
-html[data-theme="light"] code,
-html[data-theme="light"] code * {
+html[data-theme="light"] code {
   background-color: rgb(241, 231, 189) !important;
-  color: #3c3836;
 }
 
 html[data-theme="dark"] pre,
-html[data-theme="dark"] pre *,
-html[data-theme="dark"] code,
-html[data-theme="dark"] code * {
+html[data-theme="dark"] code {
   background-color: #3c3836 !important;
-  color: var(--text-color);
   border-color: var(--code-border);
 }
 
@@ -333,3 +340,54 @@ header {
 .algorithm-body .katex-display > .katex {
   text-align: left !important;
 }
+
+/* No custom token palette needed when using noClasses=true (inline styles). */
+/* Syntax highlighting palettes (Chroma classes) */
+/* Remove accidental underlines anywhere inside highlighted code */
+.chroma span { text-decoration: none !important; }
+
+/* Dark theme (Dracula-ish) */
+html[data-theme="dark"] .chroma { color: #e9e9f4; }
+html[data-theme="dark"] .chroma .c  { color: #6a7685; font-style: italic; } /* comments */
+html[data-theme="dark"] .chroma .k  { color: #ff79c6; } /* keywords */
+html[data-theme="dark"] .chroma .kc,
+html[data-theme="dark"] .chroma .kd,
+html[data-theme="dark"] .chroma .kn,
+html[data-theme="dark"] .chroma .kp,
+html[data-theme="dark"] .chroma .kr,
+html[data-theme="dark"] .chroma .kt { color: #ff79c6; }
+html[data-theme="dark"] .chroma .o  { color: #8be9fd; }
+html[data-theme="dark"] .chroma .s  { color: #f1fa8c; }
+/* Docstrings: prefer muted slate instead of green */
+html[data-theme="dark"] .chroma .sd { color: #9aa3b0; font-style: italic; }
+html[data-theme="dark"] .chroma .m  { color: #bd93f9; }
+html[data-theme="dark"] .chroma .na { color: #50fa7b; }
+html[data-theme="dark"] .chroma .nb { color: #8be9fd; }
+html[data-theme="dark"] .chroma .nc { color: #50fa7b; }
+html[data-theme="dark"] .chroma .nf { color: #50fa7b; }
+html[data-theme="dark"] .chroma .nn,
+html[data-theme="dark"] .chroma .nx { color: #e6e6e6; }
+html[data-theme="dark"] .chroma .nt { color: #8be9fd; }
+
+/* Light theme (GitHub-ish) */
+html[data-theme="light"] .chroma { color: #24292e; }
+html[data-theme="light"] .chroma .c  { color: #6a737d; font-style: italic; }
+html[data-theme="light"] .chroma .k  { color: #d73a49; }
+html[data-theme="light"] .chroma .kc,
+html[data-theme="light"] .chroma .kd,
+html[data-theme="light"] .chroma .kn,
+html[data-theme="light"] .chroma .kp,
+html[data-theme="light"] .chroma .kr,
+html[data-theme="light"] .chroma .kt { color: #d73a49; }
+html[data-theme="light"] .chroma .o  { color: #d73a49; }
+html[data-theme="light"] .chroma .s  { color: #032f62; }
+/* Docstrings: muted grey-blue, not green */
+html[data-theme="light"] .chroma .sd { color: #6a737d; font-style: italic; }
+html[data-theme="light"] .chroma .m  { color: #005cc5; }
+html[data-theme="light"] .chroma .na { color: #6f42c1; }
+html[data-theme="light"] .chroma .nb { color: #005cc5; }
+html[data-theme="light"] .chroma .nc { color: #6f42c1; }
+html[data-theme="light"] .chroma .nf { color: #6f42c1; }
+html[data-theme="light"] .chroma .nn,
+html[data-theme="light"] .chroma .nx { color: #24292e; }
+html[data-theme="light"] .chroma .nt { color: #22863a; }

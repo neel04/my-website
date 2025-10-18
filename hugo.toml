@@ -67,6 +67,8 @@ url = "/my-website/blog/"
 [markup]
 [markup.highlight]
 style = 'algol'
+noClasses = false
+guessSyntax = true
 
 [markup.goldmark.parser]
 wrapStandAloneImageWithinParagraph = false
