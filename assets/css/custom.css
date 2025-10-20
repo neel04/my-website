@@ -45,15 +45,21 @@ aside {
 html[data-theme="dark"] {
   --bg-color: #1d2021;
   --text-color: #ebdbb2;
-  --link-color: #d3b877;
-  --hover-color: #f0d7a3;
+  /* Lighten dark-mode yellows by ~20% */
+  --link-color: color-mix(in srgb, #d3b877 80%, white);
+  --hover-color: color-mix(in srgb, #f0d7a3 80%, white);
   --surface-raised: #282828;
   --surface-muted: #32302f;
-  --border-accent: #d79921;
+  --border-accent: color-mix(in srgb, #d79921 80%, white);
   --code-border: #665c54;
-  --citation-color: #d8aa4c;
-  --citation-hover: #f1c870;
-  --heading-color: #ffe9ad;
+  --citation-color: color-mix(in srgb, #d8aa4c 80%, white);
+  --citation-hover: color-mix(in srgb, #f1c870 80%, white);
+  --heading-color: color-mix(in srgb, #ffe9ad 80%, white);
+  /* Callout (note/warning) palette for dark */
+  --callout-note-bg: color-mix(in srgb, var(--citation-color) 18%, var(--bg-color));
+  --callout-note-border: var(--border-accent);
+  --callout-note-icon: var(--citation-color);
+  --callout-text: var(--text-color);
 }
 
 html[data-theme="light"] {
@@ -61,6 +67,11 @@ html[data-theme="light"] {
   --text-color: #3c3836;
   --link-color: #6f4830;
   --hover-color: #870a57;
+  /* Callout (note/warning) palette for light */
+  --callout-note-bg: #fff9d6; /* pale yellow */
+  --callout-note-border: #e6c200; /* golden border */
+  --callout-note-icon: #b08900; /* bulb color */
+  --callout-text: #3c3836;
 }
 
 
@@ -206,6 +217,73 @@ a {
 
 a:hover {
   color: var(--hover-color);
+}
+
+/* Notion-like callout (note/warning with bulb) */
+.callout {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 0.3rem;
+  row-gap: 0.5rem;
+  padding: 0.7rem 0.84rem;
+  border: 1px solid var(--callout-note-border);
+  border-left-width: 6px;
+  border-radius: 12px;
+  background: var(--callout-note-bg);
+  color: var(--callout-text);
+  align-items: start;
+}
+
+.callout .callout-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  margin-top: 0;
+  color: var(--callout-note-icon);
+  align-self: baseline;
+  transform: translateY(0.15em);
+}
+
+.callout .callout-icon svg {
+  width: 1.2em;
+  height: 1.2em;
+  display: block;
+}
+
+.callout .callout-content {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 0.25rem;
+  row-gap: 0.15rem;
+  margin: 0;
+  align-items: baseline;
+}
+
+.callout .callout-title {
+  font-weight: 600;
+}
+
+.callout .callout-title::after {
+  content: ":";
+  margin-left: 0.03rem;
+  margin-right: 0.12rem;
+}
+
+.callout .callout-body {
+  grid-column: 2;
+}
+
+.callout .callout-body > :first-child {
+  margin-top: 0;
+}
+
+.callout .callout-body > p {
+  margin: 0;
+}
+
+.callout .callout-body > p + p {
+  margin-top: 0.5rem;
 }
 
 /* Center the caption link under W&B embeds */

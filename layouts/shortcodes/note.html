@@ -1,0 +1,27 @@
+{{- $title := default "Note" (.Get "title") -}}
+{{- $icon := default "classic" (.Get "icon") -}}
+
+<div class="callout note" role="note" aria-label="{{ $title }}">
+  <div class="callout-icon" aria-hidden="true">
+    {{- if eq $icon "simple" -}}
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="presentation" fill="currentColor">
+        <path d="M9 18.5a.5.5 0 0 1 .5-.5h5a.5.5 0 1 1 0 1h-5a.5.5 0 0 1-.5-.5Zm0 2.5h6v1H9v-1Zm3-19a7 7 0 0 0-4.95 11.95c.58.58.95 1.02 1.2 1.7l.21.57h7.08l.21-.57c.25-.68.62-1.12 1.2-1.7A7 7 0 0 0 12 2Z"/>
+      </svg>
+    {{- else -}}
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="presentation">
+        <path fill="currentColor" d="M12 3a6 6 0 0 0-3.91 10.62c.55.43.93 1.02 1.09 1.69l.22.94h5.2l.22-.94c.16-.67.54-1.26 1.09-1.69A6 6 0 0 0 12 3Z"/>
+        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.2" stroke-opacity=".65" d="M13.7 4.9a3.6 3.6 0 0 1 1.6 3"/>
+        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.4" d="M10.25 18.25h3.5"/>
+        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.4" d="M9.75 20.2h4.5"/>
+      </svg>
+    {{- end -}}
+  </div>
+  <div class="callout-content">
+    <span class="callout-title">{{ $title }}</span>
+    <div class="callout-body">
+      {{- with .Inner -}}
+        {{ . | markdownify }}
+      {{- end -}}
+    </div>
+  </div>
+</div>
