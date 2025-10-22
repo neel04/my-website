@@ -29,6 +29,8 @@ But why should we focus on recursive architectures in the first place? we highli
 
 - The holy grail, however, is the ability to convert any UT to perform arbitrary, unbounded **inference-time compute** natively in the latent space.
 
+- UTs are a good tradeoff between serial and parallel computation, in line with the current paradigm and thus is the most cost-effective approach if we wish to reuse existing infrastructure.
+
 Conventional UTs (Universal Transformers) can be unstable, can diverge at scale and often don't utilize each recursive iteration to their full potential. In this work, we develop techniques to alleviate such problems and scale a real LLM to a substantial degree within the constraints of our academic budget. We empirically demonstrate improvements w.r.t. strong baselines.
 
 ## Related Work
@@ -148,13 +150,18 @@ $$
 \end{align}
 $$
 
+{{< note title="Note" >}}
+The `ProjConcat` block is iteration-dependent. Each step $i$ has its own $W_{\mathrm{proj}}^i$, which is how we inject dynamic behavior into the otherwise shared ASURA block.
+{{< /note >}}
+
 ### Decoupled Per-iteration `LayerNorm`
 
 Prior work [^3] [^5] [^6] typically does not design the architecture around `LayerNorm`s, assuming that recursing for $n$ iterations and optimization will handle normalization and scaling during training.
 However, activation statistics can drift across iterations (internal covariate shift), so per‑iteration normalization helps stabilize training [^27].
 
-However, we'd like to point out that there's little cost in "un-sharing" the normalization layers in return for stability. Additionally, it doesn't complicate the architecture design substantially and is a relatively simple and cheap way to accomplish our goal.
+While this can be also remedied via adopting post-norm, it's considered a suboptimal choice according to current literature. Thus, ASURA ends up using effectively best of both worlds - the standard pre-LN block for well-behaved gradients and a `LayerNorm` after every iteration to provide a post-LN like effect.
 
+Since there's little cost in "un-sharing" the normalization layers in return for stability. Additionally, it doesn't complicate the architecture design substantially and is a relatively simple and cheap way to accomplish our goal.
 
 ![Decoupled/Unshared LayerNorms](asura_unshared_LN.drawio.svg#full "Ensure each iteration is normalized uniquely.")
 
@@ -266,6 +273,7 @@ $$
 \begin{aligned}
 &\texttt{Pseudocode for ASURA} \newline
 &\texttt{Input: } \text{parameters } \theta, \\; \text{input } X,\; \text{iterations } i \newline
+&\newline
 &\texttt{for } \text{batch\\_idx} = 1,2,\ldots \texttt{ do} \newline
 &\quad X\_{\mathrm{in}} \leftarrow \texttt{embed\\_and\\_ln}(X) \newline
 &\quad \texttt{latent} \leftarrow X\_{\mathrm{in}} \newline
@@ -275,6 +283,7 @@ $$
 &\qquad \texttt{latent} \leftarrow \texttt{LayerNorm}(\texttt{latent}) \newline
 &\quad \texttt{end for} \newline
 &\texttt{end for} \\newline
+&\newline
 &\texttt{logits} \\leftarrow \\texttt{head}(\\texttt{latent}) \\newline
 &\texttt{loss} \\leftarrow \\texttt{CrossEntropy}(\\texttt{logits}, \\texttt{target})
 \end{aligned}
