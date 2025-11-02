@@ -13,7 +13,7 @@ math: true
 
 ## Abstract
 
-**ASURA** is a simple, recursive variant of Universal Transformers [^3] aimed at language modeling, with improved stability and scalability. It applies a shared block across depth (recursion over iterations), augmented with long skip connections and extra normalizations. In our setup, it achieves strong performance, outperforming our baselines while preserving approximately the same relative FLOPs w.r.t standard UTs.
+**ASURA** is a simple, recursive variant of Universal Transformers (UTs) [^3] aimed at language modeling, with improved stability and scalability. It applies a shared block across depth (recursion over iterations), augmented with long skip connections and extra normalizations. In our setup, it achieves strong performance, outperforming our baselines while preserving approximately the same relative `FLOP`s w.r.t standard UTs.
 
 ## Motivation
 
@@ -182,13 +182,13 @@ $$
 
 ### Decoupled Post-`LayerNorm`
 
-While this may be sufficient, we go one step further — we place these unshared norms after **each layer** as well. Prior work would implicitly share these norms. Theoretically, however, it makes sense that the statistics of the activations at each iteration would necessarily be slightly different and thus taking it into account would improve stability and performance.
+We chose to go one step further — we place un-"shared" norms after **each layer/block** as well. Prior work would implicitly share these norms across iterations. Theoretically, however, it makes sense that activations for the same block at a different iteration might introduce some covariate shift and thus factoring it in might be beneficial for us.
 
-This is effectively performing standard pre-`LN` for every $\mathcal{B}_i$ but applies a post-`LN` that's shared across the whole iteration.
+This is effectively performing standard pre-`LN` for every $\mathcal{B}_i$, but also applying an iteration-specific post-`LN` shared across all blocks in the iteration.
 
 ![Block level norm unsharing](asura_block_ln.drawio.svg#full "Pre-`LN` is still standard, i.e., unique for each block but implicitly shared across every iteration.")
 
-In our sweeps, we didn't notice major performance improvements. However, for larger runs, it reduced exploding gradients and loss spikes.
+In our sweeps, we didn't notice major performance improvements. However, for larger runs, leveraging both norm strategies reduced exploding gradients and loss spikes. We hope to run ablations to determine how beneficial either architectural decision is in isolation.
 
 ![Loss curve for a 350M UT](./loss_curve_350M_x3_transparent.svg#light "Sample loss curve for a ~`1B` (350M * 3 iters) `ASURA`")
 
@@ -356,6 +356,8 @@ Geiping et al. [^13] use truncated BPTT (i.e., backprop only the last iteration)
 It might thus be easier to fine-tune or convert an `ASURA`-styled architecture towards a Geiping et al. styled "post-training" phase to extrapolate for unbounded iterations.
 
 We see that as a very promising direction and would hope that labs might be interested in scaling up an architecture of this flavour.
+
+- **More Recurrence**: Recurrence is a great prior. It forces representations and circuits to be modular, and increases parameter efficiency. However, RNNs are recurrent on the timestep axis - and UTs are recurrent depth-wise. Some works have already unified this idea (somewhat) but we can extend it to more axes and perhaps unlock some other capabilities/efficiency gains.
 
 # Appendix
 

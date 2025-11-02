@@ -15,7 +15,7 @@ hideHeader = true
 # Intro on main page, content is markdown
 homeIntroTitle = 'Hey! 👋'
 homeIntroContent = """
-I'm Neel, an undergrad currently studying Data Science & Analytics in Ireland.
+I'm Neel, an undergrad currently studying Data Science & AI in Ireland.
 I'm particularly interested in Deep Learning research, and often spend my time reading papers
 and exploring new ideas.
 """
