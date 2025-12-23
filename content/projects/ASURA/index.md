@@ -13,7 +13,7 @@ math: true
 
 ## Abstract
 
-**ASURA** is a simple, recursive variant of Universal Transformers (UTs) [^3] aimed at language modeling, with improved stability and scalability. It applies a shared block across depth (recursion over iterations), augmented with long skip connections and extra normalizations. In our setup, it achieves strong performance, outperforming our baselines while preserving approximately the same relative `FLOP`s w.r.t standard UTs.
+**ASURA** is a simple, recursive variant of Universal Transformers (UTs) [^3] aimed at language modeling, with improved stability and scalability. It applies a shared block across depth (recursion over iterations), augmented with long skip connections and extra normalizations. In our setup, it achieves strong performance, outperforming our baselines while preserving approximately the same relative `FLOP`s *w.r.t* standard UTs.
 
 ## Motivation
 
@@ -21,17 +21,19 @@ There has been a resurgence of interest in recursive architectures recently. How
 
 But why should we focus on recursive architectures in the first place? we highlight some of the advantages below:
 
-- Parameter scaling in isolation is insufficient; robust multi-step reasoning and compositional inference demand greater depth and iterative computation - in line with the serial hypothesis [^14].
+- Parameter scaling in isolation is insufficient. Robust multi-step reasoning and compositional inference demand greater depth and iterative computation - in line with the serial hypothesis [^14].
 
-- Externalized chains (CoT) are brittle and can be unfaithful [^15]; latent-space computation with recursion avoids compounding token-level errors and allows greater bandwidth for information transfer.
+- Externalized chains (CoT) are brittle and can be unfaithful [^15]. Latent-space computation with recursion avoids compounding token-level errors and allows greater bandwidth for information transfer.
 
-- Parameter sharing over depth offers *efficiency* and **generalization** potential, but requires stability to scale to realistic corpora.
+- Parameter sharing over depth offers *efficiency* and **generalization** potential, but requires stability to scale to larger datasets.
 
 - The holy grail, however, is the ability to convert any UT to perform arbitrary, unbounded **inference-time compute** natively in the latent space.
 
 - UTs are a good tradeoff between serial and parallel computation, in line with the current paradigm and thus is the most cost-effective approach if we wish to reuse existing infrastructure.
 
-Conventional UTs (Universal Transformers) can be unstable, can diverge at scale and often don't utilize each recursive iteration to their full potential. In this work, we develop techniques to alleviate such problems and scale a real LLM to a substantial degree within the constraints of our academic budget. We empirically demonstrate improvements w.r.t. strong baselines.
+- And most importantly, UTs have an inductive bias that delays memorization due to their very formulation. This implies that UTs are worse at smaller scales compared to vanilla transformers for knowledge tasks, but as we scale it up, the delta should vanish and we should expect to see substantial returns on reasoning (especially multi-hop).
+
+Conventional UTs (Universal Transformers) however can be unstable, can diverge at scale and often don't utilize each recursive iteration to their full potential. In this work, we develop techniques to alleviate such problems and scale a real LLM to a substantial degree within the constraints of our academic budget. We empirically demonstrate improvements against strong baselines.
 
 ## Related Work
 
@@ -306,6 +308,51 @@ This is accomplished by leveraging the offline variant of recursive "classical t
 
 # Results
 
+- **150M (Baseline)**
+
+LAMBADA: {'lambada_openai': {'alias': 'lambada_openai', 'perplexity,none': 46.536547857560926, 'perplexity_stderr,none': 1.8292477844722073, 'acc,none': 1.0, 'acc_stderr,none': 0.0}}
+
+MMLU: {'mmlu': {'acc,none': 0.22945449366187154, 'acc_stderr,none': np.float64(0.0035421987494786015), 'alias': 'mmlu'},
+
+HellaSwag: {'hellaswag': {'alias': 'hellaswag', 'acc,none': 0.32772356104361683, 'acc_stderr,none': 0.004684241685200295, 'acc_norm,none': 0.2833100975901215, 'acc_norm_stderr,none': 0.004496847773250655}}
+
+PIQA: {'piqa': {'alias': 'piqa', 'acc,none': 0.6507072905331882, 'acc_stderr,none': 0.011123283817525078, 'acc_norm,none': 0.6131664853101197, 'acc_norm_stderr,none': 0.011363095931902854},
+
+WinoGrande: 'winogrande': {'alias': 'winogrande', 'acc,none': 0.5193370165745856, 'acc_stderr,none': 0.014041972733712974}}
+
+Arc (Easy): {'arc_easy': {'alias': 'arc_easy', 'acc,none': 0.37962962962962965, 'acc_stderr,none': 0.009958037725468565, 'acc_norm,none': 0.3425925925925926, 'acc_norm_stderr,none': 0.009738105469984187},
+
+Arc (Challenge): {'arc_challenge': {'alias': 'arc_challenge', 'acc,none': 0.22098976109215018, 'acc_stderr,none': 0.012124929206818257, 'acc_norm,none': 0.2696245733788396, 'acc_norm_stderr,none': 0.012968040686869147},
+
+BoolQ: 'boolq': {'alias': 'boolq', 'acc,none': 0.5825688073394495, 'acc_stderr,none': 0.008624990050216675},
+
+CommonSenseQA: 'commonsense_qa': {'alias': 'commonsense_qa', 'acc,none': 0.19574119574119575, 'acc_stderr,none': 0.011359497363584395}}
+
+OpenBookQA: 'openbookqa': {'alias': 'openbookqa', 'acc,none': 0.258, 'acc_stderr,none': 0.01958671178521584, 'acc_norm,none': 0.36, 'acc_norm_stderr,none': 0.021487751089720515}}
+
+- **150M (ASURA) x3 Iterations**
+
+LAMBADA: 32.73
+
+MMLU: 23.02%
+
+HellaSwag: 33.8%
+
+PIQA: 67.1%
+
+WinoGrande: 52.4%
+
+Arc (Easy): 38.9%
+
+Arc (Challenge): 22.7%
+
+BoolQ: 60.2%
+
+CommonSenseQA: 19.54%
+
+OpenBookQA: 26.6%
+
+
 ---
 
 
@@ -325,7 +372,7 @@ Still, we recognize that this is a limitation especially if we wish to achieve r
 
 ## Future Ideas?
 
-- **Hierarchy:** One way to address this limitation is to incorporate a hierarchical component, inspired by HRM [^23], CTM [^24], HTM [^25].
+**Hierarchy:** One way to address this limitation is to incorporate a hierarchical component, inspired by HRM [^23], CTM [^24], HTM [^25].
 
 The gist is a complex, hierarchical transformation of the latent $\hat{X}_i$ and the input $X_0$ that updates the adapter weights each iteration.
 
@@ -339,15 +386,15 @@ This would treat it as a more classical match & retrieval problem wherein we con
 
 One can easily imagine approximations to this mechanism performing well by better matching adapter selection to subcircuit activation. Given more work in MechInter and especially studying how circuits form in DNNs, perhaps this would be a viable direction in the future. 
 
-- **Score Function:** UTs have a weak correspondence with traditional diffusion models. Is there a lens via which we can view each recursive iteration? If we take the conventional score‑function perspective, are there any specific inductive biases/constraints/priors we can impose on each iteration to make it more amenable to scaling and improve performance?
+**Score Function:** UTs have a weak correspondence with traditional diffusion models. Is there a lens via which we can view each recursive iteration? If we take the conventional score‑function perspective, are there any specific inductive biases/constraints/priors we can impose on each iteration to make it more amenable to scaling and improve performance?
 
 Is there an equivalence that allows us to unify the fixed‑point DEQ formulation and diffusion models to reap both their benefits without resorting to solvers or expensive denoising‑based sampling procedures?
 
-- **Holy Grail:** Training UTs is often a sore point for many since in practice it's expensive. Could we perhaps train vanilla LLMs with some specific recipe to embed certain inductive biases that make it easier to convert them into a recursive architecture later on?
+**Holy Grail:** Training UTs is often a sore point for many since in practice it's expensive. Could we perhaps train vanilla LLMs with some specific recipe to embed certain inductive biases that make it easier to convert them into a recursive architecture later on?
 
 We know Knowledge acquisition isn't hard - so if we're completely focusing on reasoning it doesn't make sense to start afresh. If we can transfer most of the knowledge from vanilla LMs into recursive architectures, it would provide an easy boost for pre-training and make them cheap enough to scale.
 
-- **Adaptive Time-Computation:** Extending these models to unbounded iterations is a hard problem. Only a handful of works have attempted [^13] to do so and have (somewhat) succeeded.
+**Adaptive Time-Computation:** Extending these models to unbounded iterations is a hard problem. Only a handful of works have attempted [^13] to do so and have (somewhat) succeeded.
 
 However, it's clear that latent-adaptive computation unlocks a lot of benefits for reasoning. There are powerful ideas, such as parallel-time adaptive computation and MCTS-styled approaches, that may emerge as this paradigm is adopted.
 
@@ -357,13 +404,13 @@ It might thus be easier to fine-tune or convert an `ASURA`-styled architecture t
 
 We see that as a very promising direction and would hope that labs might be interested in scaling up an architecture of this flavour.
 
-- **More Recurrence**: Recurrence is a great prior. It forces representations and circuits to be modular, and increases parameter efficiency. However, RNNs are recurrent on the timestep axis - and UTs are recurrent depth-wise. Some works have already unified this idea (somewhat) but we can extend it to more axes and perhaps unlock some other capabilities/efficiency gains.
+**More Recurrence**: Recurrence is a great prior. It forces representations and circuits to be modular, and increases parameter efficiency. However, RNNs are recurrent on the timestep axis - and UTs are recurrent depth-wise. Some works have already unified this idea (somewhat) but we can extend it to more axes and perhaps unlock some other capabilities/efficiency gains.
 
 # Appendix
 
 Here we briefly describe the methodology we used to perform the experiments:
 
-Most of our time/compute was spent on hyperparameter tuning to compare various methods and evaluate their performance gain w.r.t. the baseline.
+Most of our time/compute was spent on hyperparameter tuning to compare various methods and evaluate their performance gain *w.r.t*. the baseline.
 
 We've tried our best to ensure that the runs are bug-free, and the results are as reproducible as possible. This has been much easier thanks to `JAX`'s explicit control over randomness and TPUs' static architecture.
 
