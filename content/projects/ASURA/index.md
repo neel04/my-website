@@ -308,50 +308,20 @@ This is accomplished by leveraging the offline variant of recursive "classical t
 
 # Results
 
-- **150M (Baseline)**
+At the scales we operate at, we don't obtain enough signals from traditional benchmarks. Thus, we rely more on `LAMBADA` to judge the improvements in performance between models - a proxy for a "smooth" metric to judge capabilities.
 
-LAMBADA: {'lambada_openai': {'alias': 'lambada_openai', 'perplexity,none': 46.536547857560926, 'perplexity_stderr,none': 1.8292477844722073, 'acc,none': 1.0, 'acc_stderr,none': 0.0}}
+We hope to secure additional compute and hopefully scale up these results in the short-term.
 
-MMLU: {'mmlu': {'acc,none': 0.22945449366187154, 'acc_stderr,none': np.float64(0.0035421987494786015), 'alias': 'mmlu'},
+## 150M model
 
-HellaSwag: {'hellaswag': {'alias': 'hellaswag', 'acc,none': 0.32772356104361683, 'acc_stderr,none': 0.004684241685200295, 'acc_norm,none': 0.2833100975901215, 'acc_norm_stderr,none': 0.004496847773250655}}
+| **Model** | **LAMBADA (ppl)** | **MMLU (acc)** | **PIQA (acc)** | **WinoGrande (acc)** |
+| --- | --- | --- | --- | --- |
+| Baseline | 46.54 | 22.95% | 65.07% | 51.93% |
+| ASURA (x3) | 32.73 | 23.02% | 67.1% | 52.4% |
 
-PIQA: {'piqa': {'alias': 'piqa', 'acc,none': 0.6507072905331882, 'acc_stderr,none': 0.011123283817525078, 'acc_norm,none': 0.6131664853101197, 'acc_norm_stderr,none': 0.011363095931902854},
+## 350M model
 
-WinoGrande: 'winogrande': {'alias': 'winogrande', 'acc,none': 0.5193370165745856, 'acc_stderr,none': 0.014041972733712974}}
-
-Arc (Easy): {'arc_easy': {'alias': 'arc_easy', 'acc,none': 0.37962962962962965, 'acc_stderr,none': 0.009958037725468565, 'acc_norm,none': 0.3425925925925926, 'acc_norm_stderr,none': 0.009738105469984187},
-
-Arc (Challenge): {'arc_challenge': {'alias': 'arc_challenge', 'acc,none': 0.22098976109215018, 'acc_stderr,none': 0.012124929206818257, 'acc_norm,none': 0.2696245733788396, 'acc_norm_stderr,none': 0.012968040686869147},
-
-BoolQ: 'boolq': {'alias': 'boolq', 'acc,none': 0.5825688073394495, 'acc_stderr,none': 0.008624990050216675},
-
-CommonSenseQA: 'commonsense_qa': {'alias': 'commonsense_qa', 'acc,none': 0.19574119574119575, 'acc_stderr,none': 0.011359497363584395}}
-
-OpenBookQA: 'openbookqa': {'alias': 'openbookqa', 'acc,none': 0.258, 'acc_stderr,none': 0.01958671178521584, 'acc_norm,none': 0.36, 'acc_norm_stderr,none': 0.021487751089720515}}
-
-- **150M (ASURA) x3 Iterations**
-
-LAMBADA: 32.73
-
-MMLU: 23.02%
-
-HellaSwag: 33.8%
-
-PIQA: 67.1%
-
-WinoGrande: 52.4%
-
-Arc (Easy): 38.9%
-
-Arc (Challenge): 22.7%
-
-BoolQ: 60.2%
-
-CommonSenseQA: 19.54%
-
-OpenBookQA: 26.6%
-
+[WIP]
 
 ---
 
