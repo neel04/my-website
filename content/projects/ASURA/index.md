@@ -25,15 +25,15 @@ But why should we focus on recursive architectures in the first place? we highli
 
 - Externalized chains (CoT) are brittle and can be unfaithful [^15]. Latent-space computation with recursion avoids compounding token-level errors and allows greater bandwidth for information transfer.
 
-- Parameter sharing over depth offers *efficiency* and **generalization** potential, but requires stability to scale to larger datasets.
+- Parameter sharing over depth offers **generalization** potential. In line with the compression hypothesis, increasing per-parameter efficiency should significantly improve the capabilities of LMs.
+
+- UTs are a good tradeoff between serial and parallel computation, in line with the current paradigm and thus is the more cost-effective approach if we wish to reuse existing infrastructure.
+
+- UTs have an inductive bias that delays memorization due to their very formulation. This implies that UTs are worse at smaller scales compared to vanilla transformers for knowledge tasks, but as we scale it up, the delta should vanish and we should expect to see substantial returns on reasoning (especially multi-hop).
 
 - The holy grail, however, is the ability to convert any UT to perform arbitrary, unbounded **inference-time compute** natively in the latent space.
 
-- UTs are a good tradeoff between serial and parallel computation, in line with the current paradigm and thus is the most cost-effective approach if we wish to reuse existing infrastructure.
-
-- And most importantly, UTs have an inductive bias that delays memorization due to their very formulation. This implies that UTs are worse at smaller scales compared to vanilla transformers for knowledge tasks, but as we scale it up, the delta should vanish and we should expect to see substantial returns on reasoning (especially multi-hop).
-
-Conventional UTs (Universal Transformers) however can be unstable, can diverge at scale and often don't utilize each recursive iteration to their full potential. In this work, we develop techniques to alleviate such problems and scale a real LLM to a substantial degree within the constraints of our academic budget. We empirically demonstrate improvements against strong baselines.
+Conventional UTs however can be unstable, can diverge at scale and often don't utilize each recursive iteration to their full potential. In this work, we develop techniques to alleviate such problems and scale a real LLM to a substantial degree within the constraints of our academic budget. We empirically demonstrate improvements against strong baselines.
 
 ## Related Work
 
@@ -312,23 +312,55 @@ At the scales we operate at, we don't obtain enough signals from traditional ben
 
 We hope to secure additional compute and hopefully scale up these results in the short-term.
 
-## 150M model
+### 150M model
+
+~100B tokens:
 
 | **Model** | **LAMBADA (ppl)** | **MMLU (acc)** | **PIQA (acc)** | **WinoGrande (acc)** |
 | --- | --- | --- | --- | --- |
 | Baseline | 46.54 | 22.95% | 65.07% | 51.93% |
 | ASURA (x3) | 32.73 | 23.02% | 67.1% | 52.4% |
 
-## 350M model
 
-[WIP]
+Here, the red line is the ASURA run for 3 iterations (3i).
+
+![Parameter relaxation](./val_ppl_150M_light_bg_legend_fixed.svg#light "Val/ppl for 150M model")
+
+![Parameter relaxation](./val_ppl_150M_dark_bg_legend_fixed.svg#dark "Val/ppl for 150M model")
+
+
+### 350M model
+~100B tokens:
+
+| **Benchmark** | **Baseline (350M)** | **ASURA (x3)** | **Delta** |
+| --- | --- | --- | --- |
+| LAMBADA (ppl) | 22.09 | -- | -- |
+| MMLU (acc) | 22.88% | -- | -- |
+| PIQA (acc) | 68.77% | -- | -- |
+| WinoGrande (acc) | 52.95% | -- | -- |
+| BoolQ (acc) | 58.47% | -- | -- |
+| ARC-Easy (acc) | 40.4% | -- | -- |
+| HellaSwag (acc) | 40.42% | -- | -- |
+| OpenBookQA (acc) | 28.2% | -- | -- |
+| CommonsenseQA (acc) | 19.49% | -- | -- |
+
+Evidently, it seems we could keep training for a lot more tokens and gain a better delta over baseline. So in the next run, we scale tokens instead of parameters.
+
+![Parameter relaxation](./val_ppl_350M_light_bg_legend_clip_nobreaks.svg#light "Val/ppl for 350M model")
+
+![Parameter relaxation](./val_ppl_350M_dark_bg_legend_clip_nobreaks.svg#dark "Val/ppl for 350M model")
+
+
+## [WIP]
+
+More results WIP
 
 ---
 
 
 ## Limitations
 
-This project is very much a WIP. However, there are still some theoretical problems:
+This project is very much a WIP. However, there are  some theoretical problems:
 
 - We test at a fairly limited scale due to time and resource constraints. We hope to scale up this work and develop the `ASURA` architecture further.
 
@@ -393,17 +425,6 @@ We've tried our best to ensure that the runs are bug-free, and the results are a
 - The standard `AdamW` optimizer recipe is used, with a `cosine`-decay scheduler with warmup.
 
 - We employ the stable version of cross‑entropy with PaLM-style z‑loss for mixed precision numerical stability.
-
-
-<div class="wandb-embed" aria-label="Interactive W&B panel: Decoupled LayerNorms loss">
-  <iframe
-    src="https://wandb.ai/neel/ReAct_Jax/runs/3i_FW_100B_6/panel/z2473zhjk?nw=nwuserneel"
-    loading="lazy"
-    style="width: 100%; height: 520px; border: 0;"
-    title="W&B Panel: Decoupled LayerNorms loss">
-  </iframe>
-  <p><a href="https://wandb.ai/neel/ReAct_Jax/runs/3i_FW_100B_6/panel/z2473zhjk?nw=nwuserneel" target="_blank" rel="noopener">Open interactive panel in W&B</a></p>
-</div>
 
 
 # Credits
