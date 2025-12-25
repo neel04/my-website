@@ -314,7 +314,7 @@ We hope to secure additional compute and hopefully scale up these results in the
 
 ### 150M model
 
-~100B tokens:
+~80B tokens:
 
 | **Model** | **LAMBADA (ppl)** | **MMLU (acc)** | **PIQA (acc)** | **WinoGrande (acc)** |
 | --- | --- | --- | --- | --- |
@@ -330,19 +330,20 @@ Here, the red line is the ASURA run for 3 iterations (3i).
 
 
 ### 350M model
-~100B tokens:
 
-| **Benchmark** | **Baseline (350M)** | **ASURA (x3)** | **Delta** |
-| --- | --- | --- | --- |
-| LAMBADA (ppl) | 22.09 | -- | -- |
-| MMLU (acc) | 22.88% | -- | -- |
-| PIQA (acc) | 68.77% | -- | -- |
-| WinoGrande (acc) | 52.95% | -- | -- |
-| BoolQ (acc) | 58.47% | -- | -- |
-| ARC-Easy (acc) | 40.4% | -- | -- |
-| HellaSwag (acc) | 40.42% | -- | -- |
-| OpenBookQA (acc) | 28.2% | -- | -- |
-| CommonsenseQA (acc) | 19.49% | -- | -- |
+~80B tokens. Again, we see a non-significant bump in `LAMBADA` performance.
+
+| **Benchmark** | **Baseline (350M)** | **ASURA (x3)** |
+| --- | --- | --- |
+| LAMBADA (ppl) | 22.09 | 19.184 |
+| MMLU (acc) | 22.88% | 23.86% |
+| PIQA (acc) | 68.77% | 69.74% |
+| WinoGrande (acc) | 52.95% | 54.22% |
+| BoolQ (acc) | 58.47% | 54.89 |
+| ARC-Easy (acc) | 40.4% | 40.47% |
+| HellaSwag (acc) | 40.42% | 42.74% |
+| OpenBookQA (acc) | 28.2% | 28.8% |
+| CommonsenseQA (acc) | 19.49% | 19.65% |
 
 Evidently, it seems we could keep training for a lot more tokens and gain a better delta over baseline. So in the next run, we scale tokens instead of parameters.
 
