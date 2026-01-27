@@ -296,20 +296,23 @@ At a high level, the forward pass is:
 $$
 \begin{aligned}
 &\texttt{Pseudocode for ASURA} \newline
-&\texttt{Input: } \text{parameters } \theta, \\; \text{input } X,\; \text{iterations } i \newline
+&\texttt{Input: } \theta, X, i, (w_1,\ldots,w_i) \newline
 &\newline
 &\texttt{for } \text{batch\\_idx} = 1,2,\ldots \texttt{ do} \newline
 &\quad X\_{\mathrm{in}} \leftarrow \texttt{embed\\_and\\_ln}(X) \newline
-&\quad \texttt{latent} \leftarrow X\_{\mathrm{in}} \newline
-&\quad \texttt{for } \text{iteration} = 0,1,\ldots, i \texttt{ do} \newline
-&\qquad \hat{y}\_{\mathrm{proj}} \leftarrow \texttt{proj\\_and\\_concat}(\left[\texttt{latent}, \\; X\_{\mathrm{in}}\right]) \newline
-&\qquad \texttt{latent} \leftarrow \operatorname{ASURA}\_i(\hat{y}\_{\mathrm{proj}}) \newline
-&\qquad \texttt{latent} \leftarrow \texttt{LayerNorm}(\texttt{latent}) \newline
+&\quad \hat{y}\_0 \leftarrow X\_{\mathrm{in}} \newline
+&\quad \texttt{history} \leftarrow \\{ \\} \newline
+&\quad \texttt{for } t = 1,2,\ldots, i \texttt{ do} \newline
+&\qquad \hat{y}\_{\mathrm{proj}} \leftarrow \texttt{proj\\_and\\_concat}(\left[\hat{y}\_{t-1}, \\; X\_{\mathrm{in}}\right]) \newline
+&\qquad \hat{y}\_t \leftarrow \operatorname{ASURA}\_t(\hat{y}\_{\mathrm{proj}}) \newline
+&\qquad \hat{y}\_t \leftarrow \texttt{LayerNorm}(\hat{y}\_t) \newline
+&\qquad \texttt{history} \leftarrow \texttt{append}(\texttt{history}, \\; \hat{y}\_t) \newline
 &\quad \texttt{end for} \newline
 &\texttt{end for} \\newline
 &\newline
-&\texttt{logits} \\leftarrow \\texttt{head}(\\texttt{latent}) \\newline
-&\texttt{loss} \\leftarrow \\texttt{CrossEntropy}(\\texttt{logits}, \\texttt{target})
+&\texttt{logits} \\leftarrow \\texttt{head}(\\texttt{history}) \\newline
+&\texttt{loss} \\leftarrow \\sum\_{t=1}^{i} w\_t \\cdot \\texttt{CrossEntropy}(\\texttt{logits}[t], \\texttt{target}) \\newline
+&\texttt{inference\\_logits} \\leftarrow \\texttt{logits}[i]
 \end{aligned}
 $$
 
