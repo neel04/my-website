@@ -265,6 +265,26 @@ Thus, integrating the adapter in our blocks, $\mathcal{B}_i$ looks like:
 
 ![Parameter relaxation](./asura_adapter.drawio.svg#full "Parameter relaxation via `ABBA` blocks")
 
+### Latent guidance
+
+A common failure mode in recursive/iterative models is that only the *last* iteration learns to do useful work: earlier iterations can become “warm‑up” steps that mostly pass information forward, since the training signal incentivizes optimizing the last recursive iteration first, since it'd be easier to learn and a hard minima to escape once done so.
+
+We address this with **latent guidance** (deep supervision over iterations). Instead of supervising only the final latent, we keep the iteration history $\{X_1, \dots, X_i\}$, apply the same unembedding + head at every step, and compute a weighted, progressive [^6] loss across iterations:
+
+$$
+\mathcal{L} = \sum_{t=1}^{i} w_t \cdot \mathrm{CE}\bigl(\mathrm{head}(X_t), y\bigr),
+\quad \sum_{t=1}^{i} w_t = 1,
+\quad w_1 \le \cdots \le w_i.
+$$
+
+In practice, we bias the weights toward later iterations (e.g. $w = [0.2, 0.3, 0.5]$ for $i{=}3$) to keep the objective aligned with the final prediction while still providing a direct gradient signal to early iterations. This is however a handpicked weighting that "feels right" and we make no attempt to theoretically justify it's performance.
+
+
+{{< note title="Note" >}}
+Metrics (accuracy/perplexity) and inference remain based on the **final** iteration $i$. The intermediate logits are only a training-time auxiliary.
+{{< /note >}}
+
+
 ## Pseudocode
 
 At a high level, the forward pass is:
