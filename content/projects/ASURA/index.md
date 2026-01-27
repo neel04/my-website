@@ -165,7 +165,9 @@ While this can be also remedied via adopting post-norm, it's considered a subopt
 
 Since there's little cost in "un-sharing" the normalization layers in return for stability. Additionally, it doesn't complicate the architecture design substantially and is a relatively simple and cheap way to accomplish our goal.
 
-![Decoupled/Unshared LayerNorms](asura_unshared_LN.drawio.svg#full "Ensure each iteration is normalized uniquely.")
+
+![Decoupled/Unshared LayerNorms](unshared_ln.svg#full "Ensure each iteration is normalized uniquely.")
+
 
 Thus, equation $(2)$:
 $$
