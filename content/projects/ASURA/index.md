@@ -360,7 +360,7 @@ We hope to secure additional compute and hopefully scale up these results in the
 | MMLU (acc) | 22.88% | 23.02% |
 | PIQA (acc) | 68.77% | 69.8% |
 | WinoGrande (acc) | 52.95% | 53.43% |
-| BoolQ (acc) | 58.47% | 54.89 |
+| BoolQ (acc) | 58.47% | 59.23 |
 | ARC-Easy (acc) | 40.4% | 41.54% |
 | HellaSwag (acc) | 40.42% | 42.25% |
 | OpenBookQA (acc) | 28.2% | 30.8% |
