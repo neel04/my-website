@@ -1,0 +1,87 @@
+{{- $id := .Get "id" | default (printf "observable-plot-%d" .Ordinal) -}}
+{{- $title := .Get "title" | default "Synthetic training trace (illustrative)" -}}
+{{- $caption := .Get "caption" | default "" -}}
+{{- $series := .Get "series" | default "Baseline,ASURA (x3),Variant" -}}
+{{- $seed := .Get "seed" | default "42" -}}
+{{- $points := .Get "points" | default "72" -}}
+{{- $csv := .Get "csv" | default "" -}}
+{{- $columns := .Get "columns" | default "" -}}
+{{- $x := .Get "x" | default "Step" -}}
+{{- $xLabel := .Get "xLabel" | default "" -}}
+{{- $yLabel := .Get "yLabel" | default "" -}}
+{{- $showDots := .Get "showDots" | default "true" -}}
+{{- $xMin := .Get "xMin" | default "" -}}
+{{- $xMax := .Get "xMax" | default "" -}}
+{{- $yMin := .Get "yMin" | default "" -}}
+{{- $yMax := .Get "yMax" | default "" -}}
+{{- $xScale := .Get "xScale" | default "" -}}
+{{- $yScale := .Get "yScale" | default "" -}}
+{{- $colors := .Get "colors" | default "" -}}
+
+<figure class="observable-plot"
+  data-observable-plot
+  data-series="{{ $series }}"
+  data-seed="{{ $seed }}"
+  data-points="{{ $points }}"
+  data-show-dots="{{ $showDots }}"
+  {{- if $xLabel }} data-x-label="{{ $xLabel }}"{{ end -}}
+  {{- if $yLabel }} data-y-label="{{ $yLabel }}"{{ end -}}
+  {{- if $xMin }} data-x-min="{{ $xMin }}"{{ end -}}
+  {{- if $xMax }} data-x-max="{{ $xMax }}"{{ end -}}
+  {{- if $yMin }} data-y-min="{{ $yMin }}"{{ end -}}
+  {{- if $yMax }} data-y-max="{{ $yMax }}"{{ end -}}
+  {{- if $xScale }} data-x-scale="{{ $xScale }}"{{ end -}}
+  {{- if $yScale }} data-y-scale="{{ $yScale }}"{{ end -}}
+  {{- if $colors }} data-colors="{{ $colors }}"{{ end -}}
+  {{- if $csv }} data-csv-url="{{ $csv | relURL }}"{{ end -}}
+  {{- if $columns }} data-columns="{{ $columns }}"{{ end -}}
+  {{- if $x }} data-x="{{ $x }}"{{ end -}}
+>
+  <div id="{{ $id }}" class="observable-plot__mount" role="img" aria-label="{{ $title }}"></div>
+  <div class="observable-plot__legend" aria-hidden="true">
+    {{- $labels := split $series "," -}}
+    {{- $colorList := slice -}}
+    {{- if $colors -}}
+      {{- $colorList = split $colors "," -}}
+    {{- end -}}
+    {{- if ge (len $labels) 1 -}}
+      {{- $color0 := "" -}}
+      {{- if ge (len $colorList) 1 -}}
+        {{- $color0 = index $colorList 0 | strings.TrimSpace -}}
+      {{- end -}}
+      <span class="observable-plot__legend-item">
+        <span class="observable-plot__legend-swatch observable-plot__legend-swatch--primary"{{ if $color0 }} style="background: {{ $color0 }};"{{ end }}></span>
+        {{ index $labels 0 | strings.TrimSpace }}
+      </span>
+    {{- end -}}
+    {{- if ge (len $labels) 2 -}}
+      {{- $color1 := "" -}}
+      {{- if ge (len $colorList) 2 -}}
+        {{- $color1 = index $colorList 1 | strings.TrimSpace -}}
+      {{- end -}}
+      <span class="observable-plot__legend-item">
+        <span class="observable-plot__legend-swatch observable-plot__legend-swatch--secondary"{{ if $color1 }} style="background: {{ $color1 }};"{{ end }}></span>
+        {{ index $labels 1 | strings.TrimSpace }}
+      </span>
+    {{- end -}}
+    {{- if ge (len $labels) 3 -}}
+      {{- $color2 := "" -}}
+      {{- if ge (len $colorList) 3 -}}
+        {{- $color2 = index $colorList 2 | strings.TrimSpace -}}
+      {{- end -}}
+      <span class="observable-plot__legend-item">
+        <span class="observable-plot__legend-swatch observable-plot__legend-swatch--tertiary"{{ if $color2 }} style="background: {{ $color2 }};"{{ end }}></span>
+        {{ index $labels 2 | strings.TrimSpace }}
+      </span>
+    {{- end -}}
+  </div>
+  {{- if $caption -}}
+    <figcaption>{{ $caption }}</figcaption>
+  {{- end -}}
+
+</figure>
+
+{{- if not (.Page.Scratch.Get "observablePlotScript") -}}
+  {{- .Page.Scratch.Set "observablePlotScript" true -}}
+  <script type="module" src="{{ "js/observable-plot.js" | relURL }}"></script>
+{{- end -}}

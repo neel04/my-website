@@ -194,9 +194,22 @@ This is effectively performing standard pre-`LN` for every $\mathcal{B}_i$, but 
 
 In our sweeps, we didn't notice major performance improvements. However, for larger runs, leveraging both norm strategies reduced exploding gradients and loss spikes. We hope to run ablations to determine how beneficial either architectural decision is in isolation.
 
-![Loss curve for a 350M UT](./loss_curve_350M_x3_transparent.svg#light "Sample loss curve for a ~`1B` (350M * 3 iters) `ASURA`")
-
-![Loss curve for a 350M UT](./loss_curve_dark.svg#dark "Sample loss curve for a ~`1B` (350M * 3 iters) `ASURA`")
+{{< observable-plot
+  id="asura-350m-loss-curve"
+  title="Loss curve for a 350M UT"
+  caption="Sample loss curve for a 350Mx3 ASURA. This is downsampled and thus appears smoother than the real curve."
+  series="ASURA (x3)"
+  csv="data/3i_sample_loss.csv"
+  columns="3i_350M_DeepSup - Train/cum_loss"
+  x="Step"
+  xLabel="Step"
+  yLabel="Train/loss"
+  showDots="false"
+  colors="hsl(323 99.1% 41.2%)"
+  yMin="2"
+  yMax="4"
+  xMin="0"
+>}}
 
 Continuing from equation $(3)$, we now make the iteration dependence explicit by folding the per‑iteration post‑normalizations into the block. Define the depthwise block at iteration $i$ as $\operatorname{ASURA}\_i(\cdot)$ composed of alternating layers and iteration‑specific norms:
 
@@ -331,53 +344,50 @@ Thus, we opt for a checkpointed version of a $\texttt{scan}$ to trade off comput
 This is accomplished by leveraging the offline variant of recursive "classical treeverse" checkpointing algorithm as implemented in the excellent [equinox](https://github.com/patrick-kidger/equinox) library as part of its internal toolkit [here](https://github.com/patrick-kidger/equinox/blob/cf1cf3310c870f4255e4d2cede770c8af3ae00bf/equinox/internal/_loop/loop.py#L131).
 
 
-# Results
+## Results
 
 At the scales we operate at, we don't obtain enough signals from traditional benchmarks. Thus, we rely more on `LAMBADA` to judge the improvements in performance between models - a proxy for a "smooth" metric to judge capabilities.
 
 We hope to secure additional compute and hopefully scale up these results in the short-term.
 
-### 150M model
-
-~80B tokens:
-
-| **Model** | **LAMBADA (ppl)** | **MMLU (acc)** | **PIQA (acc)** | **WinoGrande (acc)** |
-| --- | --- | --- | --- | --- |
-| Baseline | 46.54 | 22.95% | 65.07% | 51.93% |
-| ASURA (x3) | 32.73 | 23.02% | 67.1% | 52.4% |
-
-
-Here, the red line is the ASURA run for 3 iterations (3i).
-
-![Parameter relaxation](./val_ppl_150M_light_bg_legend_fixed.svg#light "Val/ppl for 150M model")
-
-![Parameter relaxation](./val_ppl_150M_dark_bg_legend_fixed.svg#dark "Val/ppl for 150M model")
-
-
 ### 350M model
 
-~80B tokens. Again, we see a non-significant bump in `LAMBADA` performance.
+~80B tokens. We see a non-significant bump in `LAMBADA` performance, which at these scales is the strongest signal towards improvements in general language modelling performance, outside the `Val/loss`
 
 | **Benchmark** | **Baseline (350M)** | **ASURA (x3)** |
 | --- | --- | --- |
-| LAMBADA (ppl) | 22.09 | 19.184 |
-| MMLU (acc) | 22.88% | 23.86% |
-| PIQA (acc) | 68.77% | 69.74% |
-| WinoGrande (acc) | 52.95% | 54.22% |
+| LAMBADA (ppl) | 22.09 | **16.25** |
+| MMLU (acc) | 22.88% | 23.02% |
+| PIQA (acc) | 68.77% | 69.8% |
+| WinoGrande (acc) | 52.95% | 53.43% |
 | BoolQ (acc) | 58.47% | 54.89 |
-| ARC-Easy (acc) | 40.4% | 40.47% |
-| HellaSwag (acc) | 40.42% | 42.74% |
-| OpenBookQA (acc) | 28.2% | 28.8% |
-| CommonsenseQA (acc) | 19.49% | 19.65% |
+| ARC-Easy (acc) | 40.4% | 41.54% |
+| HellaSwag (acc) | 40.42% | 42.25% |
+| OpenBookQA (acc) | 28.2% | 30.8% |
+| CommonsenseQA (acc) | 19.49% | 19.57% |
 
 Evidently, it seems we could keep training for a lot more tokens and gain a better delta over baseline. So in the next run, we scale tokens instead of parameters.
 
-![Parameter relaxation](./val_ppl_350M_light_bg_legend_clip_nobreaks.svg#light "Val/ppl for 350M model")
+{{< observable-plot
+  id="asura-350m-valppl"
+  title="Validation loss for 350M model"
+  caption="Validation loss for 350M model."
+  series="Baseline,ASURA"
+  csv="data/wandb_350M_old.csv"
+  columns="base_350m_fixed - Val/loss,3i_350M_DeepSup - Val/loss"
+  x="Step"
+  xLabel="Step"
+  yLabel="Val/loss"
+  showDots="false"
+  yMin="2"
+  yMax="2.75"
+  xMin="0"
+  xMax="280000"
+  yScale="log"
+>}}
 
-![Parameter relaxation](./val_ppl_350M_dark_bg_legend_clip_nobreaks.svg#dark "Val/ppl for 350M model")
 
-
-## [WIP]
+### [WIP]
 
 More results WIP
 

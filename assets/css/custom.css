@@ -337,6 +337,90 @@ html[data-theme="dark"] .wandb-embed iframe {
   min-height: 420px;
 }
 
+/* Observable Plot embed (ASURA synthetic curve) */
+.observable-plot {
+  margin: 1.4rem 0;
+}
+
+.observable-plot__mount {
+  min-height: 320px;
+}
+
+.observable-plot__legend {
+  display: inline-flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.35rem 0.9rem;
+  border: 1px solid var(--plot-legend-border);
+  border-radius: 999px;
+  background: var(--plot-legend-bg);
+  color: var(--plot-fg);
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.observable-plot__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.observable-plot__legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--plot-fg) 40%, transparent);
+}
+
+.observable-plot__legend-swatch--primary {
+  background: var(--plot-line);
+}
+
+.observable-plot__legend-swatch--secondary {
+  background: var(--plot-line-2);
+}
+
+.observable-plot__legend-swatch--tertiary {
+  background: var(--plot-line-3);
+}
+
+.observable-plot .asura-plot-svg {
+  border: 1px solid var(--plot-border);
+  border-radius: 12px;
+  display: block;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="light"] .observable-plot {
+  --plot-bg: hsl(45.5 72 87%);
+  --plot-fg: hsl(20 10% 20%);
+  --plot-border: hsl(20 12% 45% / 0.32);
+  --plot-line: hsl(210 70% 42%);   /* blue */
+  --plot-line-2: hsl(24 82% 48%);  /* orange */
+  --plot-line-3: hsl(285 55% 50%); /* purple */
+  --plot-dot: hsl(160 55% 38%);    /* green */
+  --plot-emphasis: hsl(24 82% 48%);
+  --plot-legend-bg: hsl(48 70% 88%);
+  --plot-legend-border: hsl(20 12% 45% / 0.26);
+}
+
+html[data-theme="dark"] .observable-plot {
+  --plot-bg: hsl(0 0% 16%);
+  --plot-fg: hsl(40 10% 88%);
+  --plot-border: hsl(40 10% 70% / 0.22);
+  --plot-line: hsl(210 85% 70%);  /* blue */
+  --plot-line-2: hsl(24 90% 70%); /* orange */
+  --plot-line-3: hsl(285 70% 72%);/* purple */
+  --plot-dot: hsl(160 60% 62%);   /* green */
+  --plot-emphasis: hsl(24 90% 70%);
+  --plot-legend-bg: hsl(0 0% 18%);
+  --plot-legend-border: hsl(40 10% 70% / 0.18);
+}
+
+html[data-theme="dark"] .observable-plot .asura-plot-svg {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
 #dark-mode-toggle {
   position: absolute;
   top: 3rem;  /* Aligns with the top of the header */
@@ -380,6 +464,7 @@ header {
 .algorithm-body {
   position: relative;
   padding: 0.8rem 0.9rem 0.9rem 1.2rem;
+  text-align: left;
   /* subtle horizontal guide lines */
   background-image: repeating-linear-gradient(
     to bottom,
@@ -387,6 +472,19 @@ header {
     transparent 28px,
     rgba(127,127,127,0.08) 29px
   );
+}
+
+/* Force left alignment for MathJax / KaTeX display blocks inside algorithms */
+.algorithm-body mjx-container[display],
+.algorithm-body .katex-display {
+  text-align: left !important;
+  justify-content: flex-start !important;
+  margin-left: 0 !important;
+}
+
+.algorithm-body mjx-container[display] > svg,
+.algorithm-body .katex-display > .katex {
+  margin-left: 0 !important;
 }
 
 /* Vertical rule at the left, like algorithm2e */
