@@ -97,9 +97,9 @@ async function renderPlot(node) {
   const plot = Plot.plot({
     width,
     height,
-    marginLeft: 52,
+    marginLeft: 42,
     marginRight: 18,
-    marginTop: 18,
+    marginTop: 23,
     marginBottom: 38,
     x: {
       label: xLabel,
