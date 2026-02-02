@@ -10,6 +10,9 @@
 {{- $xLabel := .Get "xLabel" | default "" -}}
 {{- $yLabel := .Get "yLabel" | default "" -}}
 {{- $showDots := .Get "showDots" | default "true" -}}
+{{- $showLastLabels := .Get "showLastLabels" | default "" -}}
+{{- $lastLabelDecimals := .Get "lastLabelDecimals" | default "" -}}
+{{- $smoothWindow := .Get "smoothWindow" | default "" -}}
 {{- $xMin := .Get "xMin" | default "" -}}
 {{- $xMax := .Get "xMax" | default "" -}}
 {{- $yMin := .Get "yMin" | default "" -}}
@@ -24,6 +27,9 @@
   data-seed="{{ $seed }}"
   data-points="{{ $points }}"
   data-show-dots="{{ $showDots }}"
+  {{- if $smoothWindow }} data-smooth-window="{{ $smoothWindow }}"{{ end -}}
+  {{- if $showLastLabels }} data-show-last-labels="{{ $showLastLabels }}"{{ end -}}
+  {{- if $lastLabelDecimals }} data-last-label-decimals="{{ $lastLabelDecimals }}"{{ end -}}
   {{- if $xLabel }} data-x-label="{{ $xLabel }}"{{ end -}}
   {{- if $yLabel }} data-y-label="{{ $yLabel }}"{{ end -}}
   {{- if $xMin }} data-x-min="{{ $xMin }}"{{ end -}}

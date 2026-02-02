@@ -19,6 +19,9 @@ async function renderPlot(node) {
   const seed = Number(node.dataset.seed || 42);
   const total = Number(node.dataset.points || 72);
   const showDots = node.dataset.showDots !== "false";
+  const showLastLabels = node.dataset.showLastLabels === "true";
+  const lastLabelDecimals = parseOptionalNumber(node.dataset.lastLabelDecimals);
+  const smoothWindow = normalizeSmoothWindow(node.dataset.smoothWindow);
   const csvUrl = node.dataset.csvUrl;
   const csvColumns = (node.dataset.columns || "")
     .split(",")
@@ -47,16 +50,39 @@ async function renderPlot(node) {
     series = buildSyntheticSeries(labels.length, total, seed);
   }
 
+  const rawSeries = series;
+  if (smoothWindow > 1) {
+    series = series.map((values) => smoothSeries(values, smoothWindow));
+  }
+
   const defaultStrokes = ["var(--plot-line)", "var(--plot-line-2)", "var(--plot-line-3)"];
   const strokeVars = colors.length > 0 ? colors : defaultStrokes;
-  const marks = series.map((values, index) =>
-    Plot.line(values, {
-      x: "step",
-      y: "value",
-      stroke: strokeVars[index] || "var(--plot-line)",
-      strokeWidth: 2.2 - index * 0.1
-    })
-  );
+  const marks = [];
+  if (smoothWindow > 1) {
+    rawSeries.forEach((values, index) => {
+      if (!values || values.length === 0) return;
+      marks.push(
+        Plot.line(values, {
+          x: "step",
+          y: "value",
+          stroke: strokeVars[index] || "var(--plot-line)",
+          strokeWidth: 1.4 - index * 0.1,
+          strokeOpacity: 0.25
+        })
+      );
+    });
+  }
+  series.forEach((values, index) => {
+    if (!values || values.length === 0) return;
+    marks.push(
+      Plot.line(values, {
+        x: "step",
+        y: "value",
+        stroke: strokeVars[index] || "var(--plot-line)",
+        strokeWidth: 2.2 - index * 0.1
+      })
+    );
+  });
 
   if (showDots && series[0] && series[0].length > 0) {
     marks.push(
@@ -83,6 +109,52 @@ async function renderPlot(node) {
         r: 3.4
       })
     );
+  }
+
+  if (showLastLabels) {
+    const decimals = Number.isFinite(lastLabelDecimals) ? Math.max(0, Math.round(lastLabelDecimals)) : 3;
+    const lastPoints = series
+      .map(findLastPoint)
+      .map((point, index) =>
+        point
+          ? {
+              step: point.step,
+              value: point.value,
+              seriesIndex: index,
+              label: formatValue(point.value, decimals)
+            }
+          : null
+      )
+      .filter(Boolean);
+
+    if (lastPoints.length > 0) {
+      marks.push(
+        Plot.dot(lastPoints, {
+          x: "step",
+          y: "value",
+          fill: (d) => strokeVars[d.seriesIndex] || "var(--plot-fg)",
+          stroke: "var(--plot-bg)",
+          strokeOpacity: 0.7,
+          strokeWidth: 1.2,
+          r: 3.6
+        })
+      );
+      marks.push(
+        Plot.text(lastPoints, {
+          x: "step",
+          y: "value",
+          text: "label",
+          dx: -6,
+          dy: -6,
+          textAnchor: "end",
+          fontSize: 12,
+          fontWeight: 600,
+          fill: (d) => strokeVars[d.seriesIndex] || "var(--plot-fg)",
+          stroke: "var(--plot-bg)",
+          strokeWidth: 3
+        })
+      );
+    }
   }
 
   const width = 720;
@@ -220,4 +292,49 @@ function sanitizeScale(value) {
   if (normalized === "log") return "log";
   if (normalized === "linear") return "linear";
   return undefined;
+}
+
+function findLastPoint(points) {
+  if (!points || points.length === 0) return null;
+  return points.reduce((latest, point) => (point.step > latest.step ? point : latest), points[0]);
+}
+
+function formatValue(value, decimals) {
+  if (!Number.isFinite(value)) return "";
+  return value.toFixed(decimals);
+}
+
+function normalizeSmoothWindow(value) {
+  const parsed = parseOptionalNumber(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return 0;
+  return Math.max(1, Math.round(parsed));
+}
+
+function smoothSeries(points, windowSize) {
+  if (!points || points.length === 0) return points;
+  const size = Math.max(1, Math.round(windowSize));
+  if (size <= 1) return points;
+
+  const smoothed = [];
+  const values = [];
+  let sum = 0;
+  let start = 0;
+
+  for (let i = 0; i < points.length; i += 1) {
+    const point = points[i];
+    const value = point.value;
+    values.push(value);
+    sum += value;
+
+    while (i - start + 1 > size) {
+      sum -= values[start];
+      start += 1;
+    }
+
+    const count = i - start + 1;
+    const avg = sum / count;
+    smoothed.push({ step: point.step, value: avg });
+  }
+
+  return smoothed;
 }

@@ -262,7 +262,7 @@ We chose to go one step further — we place un-"shared" norms after **each laye
 
 This is effectively performing standard pre-`LN` for every $\mathcal{B}_i$, but also applying an iteration-specific post-`LN` shared across all blocks in the iteration.
 
-![Block level norm unsharing](asura_block_ln.drawio.svg#full "Pre-`LN` is still standard, i.e., unique for each block but implicitly shared across every iteration.")
+![Block level norm unsharing](asura_block_ln.drawio.svg#wide "Pre-`LN` is still standard, i.e., unique for each block but implicitly shared across every iteration.")
 
 In our sweeps, we didn't notice major performance improvements. However, for larger runs, leveraging both norm strategies reduced exploding gradients and loss spikes. We hope to run ablations to determine how beneficial either architectural decision is in isolation.
 
@@ -277,10 +277,11 @@ In our sweeps, we didn't notice major performance improvements. However, for lar
   xLabel="Step"
   yLabel="Train/loss"
   showDots="false"
-  colors="hsl(323 99.1% 41.2%)"
-  yMin="2"
+  colors="oklch(0.537 0.228 309.389)"
   yMax="4"
+  yMin="1.9"
   xMin="0"
+  yScale="log"
 >}}
 
 Continuing from equation $(3)$, we now make the iteration dependence explicit by folding the per‑iteration post‑normalizations into the block. Define the depthwise block at iteration $i$ as $\operatorname{ASURA}\_i(\cdot)$ composed of alternating layers and iteration‑specific norms:
@@ -329,7 +330,6 @@ $$
 &\newline
 &\texttt{logits} \\leftarrow \\texttt{head}(\\texttt{history}) \\newline
 &\texttt{loss} \\leftarrow \\sum\_{t=1}^{i} w\_t \\cdot \\texttt{CrossEntropy}(\\texttt{logits}[t], \\texttt{target}) \\newline
-&\texttt{inference\\_logits} \\leftarrow \\texttt{logits}[i]
 \end{aligned}
 $$
 
@@ -372,6 +372,8 @@ We hope to secure additional compute and hopefully scale up these results in the
 
 Evidently, it seems we could keep training for a lot more tokens and gain a better delta over baseline. So in the next run, we scale tokens instead of parameters.
 
+**Validation loss** over the last 1% of the `FineWeb` dataset:
+
 {{< observable-plot
   id="asura-350m-valppl"
   title="Validation loss for 350M model"
@@ -383,13 +385,37 @@ Evidently, it seems we could keep training for a lot more tokens and gain a bett
   xLabel="Step"
   yLabel="Val/loss"
   showDots="false"
+  showLastLabels="true"
   yMin="2"
   yMax="2.75"
-  xMin="0"
+  xMin="5000"
   xMax="280000"
   yScale="log"
+  smoothWindow="5"
 >}}
 
+**LAMBADA** scores (ppl):
+
+{{< observable-plot
+  id="asura-350m-lambada"
+  title="LAMBADA perplexity for 350M model"
+  caption="LAMBADA perplexity for 350M model."
+  series="Baseline,ASURA"
+  csv="data/350M_old_lambada_ppl.csv"
+  columns="base_350m_fixed - Bench/LAMBADA_ppl,3i_350M_DeepSup - Bench/LAMBADA_ppl"
+  x="Step"
+  xLabel="Step"
+  yLabel="LAMBADA ppl"
+  showDots="false"
+  yMax="60"
+  yMin="16"
+  xMax="315300"
+  xMin="10000"
+  showLastLabels="true"
+  yScale="log"
+  smoothWindow="7"
+  yScale="log"
+>}}
 
 ### [WIP]
 
@@ -463,6 +489,8 @@ We've tried our best to ensure that the runs are bug-free, and the results are a
 - We use a standard, competitive pre-`LN` transformer baseline with `RoPE` [^22] and the aforementioned `GeLU` activation inline.
 
 - The standard `AdamW` optimizer recipe is used, with a `cosine`-decay scheduler with warmup.
+
+- We also employ `QK-Norm` to additionally stabilize the baselines further and ensure they have the best performance.
 
 - We employ the stable version of cross‑entropy with PaLM-style z‑loss for mixed precision numerical stability.
 
