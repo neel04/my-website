@@ -38,8 +38,8 @@ figcaption {
 }
 
 aside {
-  background-color: #f5e6b0; /* Light gold background */
-  border-left: 4px solid #d59e05; /* Blue left border */
+  background-color: #f7ebc0; /* Light gold background */
+  border-left: 4px solid #ddb137; /* Gold left border */
   padding: 10px 15px; /* Padding inside the aside */
   margin: 20px 0; /* Margin outside the aside */
   font-style: normal;
@@ -52,17 +52,17 @@ aside {
 
 html[data-theme="dark"] {
   --bg-color: #1d2021;
-  --text-color: #ebdbb2;
-  /* Lighten dark-mode yellows by ~20% */
-  --link-color: color-mix(in srgb, #d3b877 80%, white);
-  --hover-color: color-mix(in srgb, #f0d7a3 80%, white);
+  --text-color: #f3e7c8;
+  /* Lighten dark-mode yellows */
+  --link-color: color-mix(in srgb, #d3b877 60%, white);
+  --hover-color: color-mix(in srgb, #f0d7a3 60%, white);
   --surface-raised: #282828;
   --surface-muted: #32302f;
-  --border-accent: color-mix(in srgb, #d79921 80%, white);
+  --border-accent: color-mix(in srgb, #d79921 60%, white);
   --code-border: #665c54;
-  --citation-color: color-mix(in srgb, #d8aa4c 80%, white);
-  --citation-hover: color-mix(in srgb, #f1c870 80%, white);
-  --heading-color: color-mix(in srgb, #ffe9ad 80%, white);
+  --citation-color: color-mix(in srgb, #d8aa4c 60%, white);
+  --citation-hover: color-mix(in srgb, #f1c870 60%, white);
+  --heading-color: color-mix(in srgb, #ffe9ad 60%, white);
   /* Callout (note/warning) palette for dark */
   --callout-note-bg: color-mix(in srgb, var(--citation-color) 18%, var(--bg-color));
   --callout-note-border: var(--border-accent);
@@ -71,14 +71,14 @@ html[data-theme="dark"] {
 }
 
 html[data-theme="light"] {
-  --bg-color: #fef6d6;
+  --bg-color: #fff8de;
   --text-color: #3c3836;
   --link-color: #6f4830;
   --hover-color: #870a57;
   /* Callout (note/warning) palette for light */
-  --callout-note-bg: #fff9d6; /* pale yellow */
-  --callout-note-border: #e6c200; /* golden border */
-  --callout-note-icon: #b08900; /* bulb color */
+  --callout-note-bg: #fffbe2; /* pale yellow */
+  --callout-note-border: #ebce33; /* golden border */
+  --callout-note-icon: #c0a133; /* bulb color */
   --callout-text: #3c3836;
 }
 
@@ -112,7 +112,7 @@ pre code,
 
 
 html[data-theme="light"] p code {
-  background-color: rgb(241, 231, 189);
+  background-color: rgb(244, 236, 202);
 }
 
 html[data-theme="dark"] p code {
@@ -146,7 +146,7 @@ html[data-theme="dark"] aside.toc {
 /* Avoid forcing colors inside code/pre so syntax tokens can show colors */
 html[data-theme="light"] pre,
 html[data-theme="light"] code {
-  background-color: rgb(241, 231, 189) !important;
+  background-color: rgb(244, 236, 202) !important;
 }
 
 html[data-theme="dark"] pre,
@@ -157,14 +157,14 @@ html[data-theme="dark"] code {
 
 html[data-theme="light"] td *,
 html[data-theme="light"] td {
-  background-color: rgb(235, 222, 175);
+  background-color: rgb(239, 229, 191);
   color: #3c3836;
 }
 
 html[data-theme="dark"] th *,
 html[data-theme="dark"] th {
   background-color: rgb(50, 50, 50);
-  color: rgb(246, 235, 195);
+  color: rgb(248, 239, 206);
 }
 
 html[data-theme="dark"] td {
@@ -201,7 +201,7 @@ html[data-theme="dark"] .footnotes a:hover {
 
 html[data-theme="light"] aside.toc code,
 html[data-theme="light"] aside.toc code * {
-  background-color: rgb(228, 216, 169) !important;
+  background-color: rgb(233, 224, 186) !important;
   color: #282625 !important;
 }
 
@@ -541,7 +541,7 @@ html[data-theme="dark"] .chroma .kp,
 html[data-theme="dark"] .chroma .kr,
 html[data-theme="dark"] .chroma .kt { color: #ff79c6; }
 html[data-theme="dark"] .chroma .o  { color: #8be9fd; }
-html[data-theme="dark"] .chroma .s  { color: #f1fa8c; }
+html[data-theme="dark"] .chroma .s  { color: #f3fb9d; }
 /* Docstrings: prefer muted slate instead of green */
 html[data-theme="dark"] .chroma .sd { color: #9aa3b0; font-style: italic; }
 html[data-theme="dark"] .chroma .m  { color: #bd93f9; }
