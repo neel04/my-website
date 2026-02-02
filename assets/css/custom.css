@@ -7,6 +7,14 @@
   height: auto;
 }
 
+.img-wide .img-container {
+  width: min(88%, 920px);
+}
+
+.img-wide img {
+  width: 93%;
+}
+
 body {
   font-family: 'IBM Plex sans', sans-serif;
   font-weight: 400;

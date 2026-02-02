@@ -114,23 +114,25 @@ However, this naive recursive formulation isn't optimal. Next, we derive the $\t
 
 One of the major problems with UTs is their lack of effectiveness across iterations. Prior work has demonstrated that ideally we should obtain a performance benefit $\propto \log({\text{depth}})$ [^12]. However, in practice that's hard to achieve. 
 
-We introduce a projected deep residual connection to stabilize the network and improve gradient flow. For tensors $X_{0},\ldots,X_{n}$ with compatible last dimensions and a projection $W_{\mathrm{proj}} \in \mathbb{R}^{n k\times k}$:
+We introduce a projected deep residual connection to stabilize the network and improve gradient flow. For tensors $X_{0},\ldots,X_{n}$ with compatible last dimensions and a projection $W_{\mathrm{proj}} \in \mathbb{R}^{n k\times k}$, we define:
 
 $$
 \operatorname{ProjConcat}(X_{0},\ldots,X_{n})^k = \Big( \bigoplus_{i=0}^{n} X_{i} \Big) W_{\mathrm{proj}}^k.
 $$
 
+$\operatorname{ProjConcat}$ concates together all its provided arguments and then computes their learned, linear combination in an iteration-independent manner. While this is general enough to operate on any number of latents, in practice we only compute this on the original embedded input ($X_0$) and the previous recursive latent.
+
 ![ProjConcat: project-and-concatenate long skip](asura_concat_proj.drawio.svg#full "ProjConcat: concatenate residuals, then project with W_proj.")
 
 Compared to naive recurrence, this reduces information bottlenecks in the residual stream by providing a direct, projected pathway from the input embedding and the previous latent, which improves gradient flow and utilization across iterations.
 
-Here, $X_i$ denotes the $i$‑th residual of the network. In practice (for input $X_0$):
+Formalizing, using $X_i$ to denote the $i$‑th residual of the network (for input $X_0$):
 
 $$
 \hat{X}\_{\mathrm{skip}}^i = \Big( \operatorname{Emb}(X_{0}) \oplus \hat{X}\_{\mathrm{i - 1}} \Big) \times W_{\mathrm{proj}}^k
 $$
 
-for recursive iteration $i \in \[1, \text{max\\_iters}\]$ and $\operatorname{Emb}$ is the standard embedding operator.
+for recursive iteration $i \in \[1, \text{max\\_iters}\]$ and $\operatorname{Emb}$ is the standard embedding operation.
 
 Note the similarity to the recall mechanism introduced in [^6] and the "Prelude" block in [^13]. However, Deep Residual is a more expressive way to perform input injection: 
 
@@ -156,79 +158,26 @@ $$
 The `ProjConcat` block is iteration-dependent. Each step $i$ has its own $W_{\mathrm{proj}}^i$, which is how we inject dynamic behavior into the otherwise shared ASURA block.
 {{< /note >}}
 
-### Decoupled Per-iteration `LayerNorm`
+### Latent guidance
 
-Prior work [^3] [^5] [^6] typically does not design the architecture around `LayerNorm`s, assuming that recursing for $n$ iterations and optimization will handle normalization and scaling during training.
-However, activation statistics can drift across iterations (internal covariate shift), so per‑iteration normalization helps stabilize training [^27].
+A common failure mode in recursive/iterative models is that only the *last* iteration learns to do useful work: earlier iterations can become “warm‑up” steps that mostly pass information forward, since the training signal incentivizes optimizing the last recursive iteration first, since it'd be easier to learn and a hard minima to escape once done so.
 
-While this can be also remedied via adopting post-norm, it's considered a suboptimal choice according to current literature. Thus, ASURA ends up using effectively best of both worlds - the standard pre-LN block for well-behaved gradients and a `LayerNorm` after every iteration to provide a post-LN like effect.
-
-Since there's little cost in "un-sharing" the normalization layers in return for stability. Additionally, it doesn't complicate the architecture design substantially and is a relatively simple and cheap way to accomplish our goal.
-
-
-![Decoupled/Unshared LayerNorms](unshared_ln.svg#full "Ensure each iteration is normalized uniquely.")
-
-
-Thus, equation $(2)$:
-$$
-\begin{aligned}
-  \hat{X}\_{i+1} = \text{ASURA}(\operatorname{ProjConcat}\_i(\operatorname{Emb}(X_{0}), \\: X_{i} )) =  \text{ASURA} \(X_{\mathrm{skip}}^i )
-\end{aligned}
-$$
-
-becomes:
+We address this with **latent guidance** (deep supervision over iterations). Instead of supervising only the final latent, we keep the iteration history $\{X_1, \dots, X_i\}$, apply the same unembedding + head at every step, and compute a weighted, progressive [^6] loss across iterations:
 
 $$
-\begin{align}
-  \implies \hat{X}\_{i+1} = \operatorname{LayerNorm}^i \( \text{ASURA} \(X_{\mathrm{skip}}^i \) \)
-\end{align}
+\mathcal{L} = \sum_{t=1}^{i} w_t \cdot \mathrm{CE}\bigl(\mathrm{head}(X_t), y\bigr),
+\quad \sum_{t=1}^{i} w_t = 1,
+\quad w_1 \le \cdots \le w_i.
 $$
 
-### Decoupled Post-`LayerNorm`
+In practice, we bias the weights toward later iterations (e.g. $w = [0.2, 0.3, 0.5]$ for $i{=}3$) to keep the objective aligned with the final prediction while still providing a direct gradient signal to early iterations. This is however a handpicked weighting that "feels right" and we make no attempt to theoretically justify it's performance.
 
-We chose to go one step further — we place un-"shared" norms after **each layer/block** as well. Prior work would implicitly share these norms across iterations. Theoretically, however, it makes sense that activations for the same block at a different iteration might introduce some covariate shift and thus factoring it in might be beneficial for us.
+This provides a huge boost to performance, however it consumes extra VRAM which grows linearly w.r.t number of iterations. While for our setup, this isn't a big issue, in the future one could integrate an iterative approach wherein we compute the weighted loss w.r.t the target at each recurrence and update the moving loss, thus keeping memory cost $\mathcal{O}(1)$
 
-This is effectively performing standard pre-`LN` for every $\mathcal{B}_i$, but also applying an iteration-specific post-`LN` shared across all blocks in the iteration.
+{{< note title="Note" >}}
+Metrics (accuracy/perplexity) and inference remain based on the **final** iteration $i$. The intermediate logits are only a training-time auxiliary.
+{{< /note >}}
 
-![Block level norm unsharing](asura_block_ln.drawio.svg#full "Pre-`LN` is still standard, i.e., unique for each block but implicitly shared across every iteration.")
-
-In our sweeps, we didn't notice major performance improvements. However, for larger runs, leveraging both norm strategies reduced exploding gradients and loss spikes. We hope to run ablations to determine how beneficial either architectural decision is in isolation.
-
-{{< observable-plot
-  id="asura-350m-loss-curve"
-  title="Loss curve for a 350M UT"
-  caption="Sample loss curve for a 350Mx3 ASURA. This is downsampled and thus appears smoother than the real curve."
-  series="ASURA (x3)"
-  csv="data/3i_sample_loss.csv"
-  columns="3i_350M_DeepSup - Train/cum_loss"
-  x="Step"
-  xLabel="Step"
-  yLabel="Train/loss"
-  showDots="false"
-  colors="hsl(323 99.1% 41.2%)"
-  yMin="2"
-  yMax="4"
-  xMin="0"
->}}
-
-Continuing from equation $(3)$, we now make the iteration dependence explicit by folding the per‑iteration post‑normalizations into the block. Define the depthwise block at iteration $i$ as $\operatorname{ASURA}\_i(\cdot)$ composed of alternating layers and iteration‑specific norms:
-
-$$
-\operatorname{ASURA}\_i(x)
-  = \Big( 
-      \mathcal{B}\_0(\theta_0) \circ \operatorname{LN}\_i \circ \\: \mathcal{B}\_1(\theta_1) \circ \operatorname{LN}\_i \circ \dots
-     \Big)(x)
-$$
-
-and the recurrence becomes
-
-$$
-\begin{align}
-\hat{X}\_{i+1} = \operatorname{ASURA}\_i\left(X\_{\mathrm{skip}}^{i}\right)
-\end{align}
-$$
-
-In this equation $(4)$, the $\operatorname{LN}\_i^{(\ell)}$ denotes the post‑`LayerNorm` associated with layer $\ell$ at iteration $i$ and the operator now explicitly consumes the iteration index.
 
 ### Parameter Relaxation
 
@@ -278,25 +227,80 @@ Thus, integrating the adapter in our blocks, $\mathcal{B}_i$ looks like:
 
 ![Parameter relaxation](./asura_adapter.drawio.svg#full "Parameter relaxation via `ABBA` blocks")
 
-### Latent guidance
+### Decoupled Per-iteration `LayerNorm`
 
-A common failure mode in recursive/iterative models is that only the *last* iteration learns to do useful work: earlier iterations can become “warm‑up” steps that mostly pass information forward, since the training signal incentivizes optimizing the last recursive iteration first, since it'd be easier to learn and a hard minima to escape once done so.
+Prior work [^3] [^5] [^6] typically does not design the architecture around `LayerNorm`s, assuming that recursing for $n$ iterations and optimization will handle normalization and scaling during training.
+However, activation statistics can drift across iterations (internal covariate shift), so per‑iteration normalization helps stabilize training [^27].
 
-We address this with **latent guidance** (deep supervision over iterations). Instead of supervising only the final latent, we keep the iteration history $\{X_1, \dots, X_i\}$, apply the same unembedding + head at every step, and compute a weighted, progressive [^6] loss across iterations:
+ASURA effectively utilizes best of both worlds, the standard pre-LN block for well-behaved gradients and a decoupled `LayerNorm` after every iteration to provide a post-LN like effect and stabilize each iteration, among other benefits.
+
+There's very litte overhead in "un-sharing" the normalization layers, and yields substantial returns in the form of stability and slight performance boosts. Additionally, it doesn't complicate the architecture design substantially and is a relatively simple way to accomplish our goal, at the scales we work with.
+
+
+![Decoupled/Unshared LayerNorms](unshared_ln.svg#wide "Ensure each iteration is normalized uniquely.")
+
+
+Thus, equation $(2)$:
+$$
+\begin{aligned}
+  \hat{X}\_{i+1} = \text{ASURA}(\operatorname{ProjConcat}\_i(\operatorname{Emb}(X_{0}), \\: X_{i} )) =  \text{ASURA} \(X_{\mathrm{skip}}^i )
+\end{aligned}
+$$
+
+becomes:
 
 $$
-\mathcal{L} = \sum_{t=1}^{i} w_t \cdot \mathrm{CE}\bigl(\mathrm{head}(X_t), y\bigr),
-\quad \sum_{t=1}^{i} w_t = 1,
-\quad w_1 \le \cdots \le w_i.
+\begin{align}
+  \implies \hat{X}\_{i+1} = \operatorname{LayerNorm}^i \( \text{ASURA} \(X_{\mathrm{skip}}^i \) \)
+\end{align}
 $$
 
-In practice, we bias the weights toward later iterations (e.g. $w = [0.2, 0.3, 0.5]$ for $i{=}3$) to keep the objective aligned with the final prediction while still providing a direct gradient signal to early iterations. This is however a handpicked weighting that "feels right" and we make no attempt to theoretically justify it's performance.
 
+### Decoupled Post-`LayerNorm`
 
-{{< note title="Note" >}}
-Metrics (accuracy/perplexity) and inference remain based on the **final** iteration $i$. The intermediate logits are only a training-time auxiliary.
-{{< /note >}}
+We chose to go one step further — we place un-"shared" norms after **each layer/block** as well. Prior work would implicitly share these norms across iterations. Theoretically, however, it makes sense that activations for the same block at a different iteration might introduce some covariate shift and thus factoring it in might be beneficial for us.
 
+This is effectively performing standard pre-`LN` for every $\mathcal{B}_i$, but also applying an iteration-specific post-`LN` shared across all blocks in the iteration.
+
+![Block level norm unsharing](asura_block_ln.drawio.svg#full "Pre-`LN` is still standard, i.e., unique for each block but implicitly shared across every iteration.")
+
+In our sweeps, we didn't notice major performance improvements. However, for larger runs, leveraging both norm strategies reduced exploding gradients and loss spikes. We hope to run ablations to determine how beneficial either architectural decision is in isolation.
+
+{{< observable-plot
+  id="asura-350m-loss-curve"
+  title="Loss curve for a 350M UT"
+  caption="Sample loss curve for a 350Mx3 ASURA. This is downsampled and thus appears smoother than the real curve."
+  series="ASURA (x3)"
+  csv="data/3i_sample_loss.csv"
+  columns="3i_350M_DeepSup - Train/cum_loss"
+  x="Step"
+  xLabel="Step"
+  yLabel="Train/loss"
+  showDots="false"
+  colors="hsl(323 99.1% 41.2%)"
+  yMin="2"
+  yMax="4"
+  xMin="0"
+>}}
+
+Continuing from equation $(3)$, we now make the iteration dependence explicit by folding the per‑iteration post‑normalizations into the block. Define the depthwise block at iteration $i$ as $\operatorname{ASURA}\_i(\cdot)$ composed of alternating layers and iteration‑specific norms:
+
+$$
+\operatorname{ASURA}\_i(x)
+  = \Big( 
+      \mathcal{B}\_0(\theta_0) \circ \operatorname{LN}\_i \circ \\: \mathcal{B}\_1(\theta_1) \circ \operatorname{LN}\_i \circ \dots
+     \Big)(x)
+$$
+
+and the recurrence becomes
+
+$$
+\begin{align}
+\hat{X}\_{i+1} = \operatorname{ASURA}\_i\left(X\_{\mathrm{skip}}^{i}\right)
+\end{align}
+$$
+
+In this equation $(4)$, the $\operatorname{LN}\_i^{(\ell)}$ denotes the post‑`LayerNorm` associated with layer $\ell$ at iteration $i$ and the operator now explicitly consumes the iteration index.
 
 ## Pseudocode
 
