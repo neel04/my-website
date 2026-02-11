@@ -3,6 +3,8 @@ languageCode = 'en-us'
 title = 'Neel Gupta'
 theme = 'typo'
 
+googleAnalytics = "G-PKTR8X5Y1X"
+
 [params]
 # Meta description
 description = "Neel Gupta's Homepage"
