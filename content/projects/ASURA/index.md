@@ -11,6 +11,13 @@ date: "2025-10-10"
 math: true
 ---
 
+{{< wip title="Status" >}}
+This Worklog is **WIP**.
+Expect changes, as I acquire more compute and perform more experiments/ablations.
+{{< /wip >}}
+
+---
+
 ## Abstract
 
 **ASURA** is a simple, recursive variant of Universal Transformers (UTs) [^3] aimed at language modeling, with improved stability and scalability. It applies a shared block across depth (recursion over iterations), augmented with long skip connections and extra normalizations. In our setup, it achieves strong performance, outperforming our baselines while preserving approximately the same relative `FLOP`s *w.r.t* standard UTs.

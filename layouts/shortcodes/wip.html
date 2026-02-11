@@ -1,0 +1,26 @@
+{{- $title := default "Status" (.Get "title") -}}
+
+<div class="callout wip" role="status" aria-label="{{ $title }}">
+  <div class="wip-head">
+    <div class="wip-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="presentation">
+          <path fill="currentColor" d="M12 2.9L1.8 20.4a1 1 0 0 0 .86 1.5h18.68a1 1 0 0 0 .86-1.5L12 2.9z"/>
+          <path class="wip-mark-stroke" d="M12 8.5v5.95" stroke-width="2.5" stroke-linecap="round"/>
+          <circle class="wip-mark-fill" cx="12" cy="17.7" r="1.45"/>
+        </svg>
+    </div>
+    <span class="wip-title">{{ $title }}</span>
+    <div class="wip-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="presentation">
+          <path fill="currentColor" d="M12 2.9L1.8 20.4a1 1 0 0 0 .86 1.5h18.68a1 1 0 0 0 .86-1.5L12 2.9z"/>
+          <path class="wip-mark-stroke" d="M12 8.5v5.95" stroke-width="2.5" stroke-linecap="round"/>
+          <circle class="wip-mark-fill" cx="12" cy="17.7" r="1.45"/>
+        </svg>
+    </div>
+  </div>
+  <div class="wip-text">
+    {{- with .Inner -}}
+      {{ . | markdownify }}
+    {{- end -}}
+  </div>
+</div>

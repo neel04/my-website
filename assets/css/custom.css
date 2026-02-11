@@ -67,6 +67,10 @@ html[data-theme="dark"] {
   --callout-note-bg: color-mix(in srgb, var(--citation-color) 18%, var(--bg-color));
   --callout-note-border: var(--border-accent);
   --callout-note-icon: var(--citation-color);
+  --callout-wip-bg: color-mix(in srgb, #e08a11 26%, var(--bg-color));
+  --callout-wip-border: color-mix(in srgb, #e08a11 58%, white);
+  --callout-wip-icon: #f0b44f;
+  --callout-wip-mark: #7a531d;
   --callout-text: var(--text-color);
 }
 
@@ -79,6 +83,10 @@ html[data-theme="light"] {
   --callout-note-bg: #fffbe2; /* pale yellow */
   --callout-note-border: #ebce33; /* golden border */
   --callout-note-icon: #c0a133; /* bulb color */
+  --callout-wip-bg: #f7e5bf; /* darker ochre than note */
+  --callout-wip-border: #d79622; /* mclaren-ish orange ochre */
+  --callout-wip-icon: #b96f10;
+  --callout-wip-mark: #fff8de;
   --callout-text: #3c3836;
 }
 
@@ -272,12 +280,6 @@ a:hover {
   font-weight: 600;
 }
 
-.callout .callout-title::after {
-  content: ":";
-  margin-left: 0.03rem;
-  margin-right: 0.12rem;
-}
-
 .callout .callout-body {
   grid-column: 2;
 }
@@ -291,6 +293,71 @@ a:hover {
 }
 
 .callout .callout-body > p + p {
+  margin-top: 0.5rem;
+}
+
+.callout.wip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: 0.28rem;
+  text-align: center;
+  border-color: var(--callout-wip-border);
+  background: var(--callout-wip-bg);
+}
+
+.callout.wip .wip-head {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.62rem;
+  line-height: 1;
+}
+
+.callout.wip .wip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--callout-wip-icon);
+  flex: 0 0 auto;
+  transform: translateY(-0.01em);
+}
+
+.callout.wip .wip-icon svg {
+  width: 1.9rem;
+  height: 1.9rem;
+  display: block;
+}
+
+.callout.wip .wip-icon .wip-mark-stroke {
+  stroke: var(--callout-wip-mark);
+}
+
+.callout.wip .wip-icon .wip-mark-fill {
+  fill: var(--callout-wip-mark);
+}
+
+.callout.wip .wip-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.05;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.callout.wip .wip-text {
+  max-width: 100%;
+}
+
+.callout.wip .wip-text > :first-child {
+  margin-top: 0;
+}
+
+.callout.wip .wip-text > p {
+  margin: 0;
+}
+
+.callout.wip .wip-text > p + p {
   margin-top: 0.5rem;
 }
 
