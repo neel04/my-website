@@ -363,21 +363,25 @@ We hope to secure additional compute and hopefully scale up these results in the
 
 ### 350M model
 
-~90B tokens. We see a non-significant bump in `LAMBADA` performance, which at these scales is the strongest signal towards improvements in general language modelling performance, outside the `Val/loss`
+To ensure the comparison is fair, we train the baseline for $3\times$ more epochs to produce an iso-FLOP and iso-Param baseline that isn't nerfed.
+
+This gives an extra advantage to the baseline but we note *ASURA* still handily beats it, proving that dense UTs are competitive with baseline transformers - which to our knowledge is the first time it's ever been demonstrated with a fair and competitive baseline.
+
+We train both models on ~90B (unique) tokens, for 350M parameters (incl. embedding parameters).
+
+One can observe a non-significant bump in `LAMBADA` performance, which at these scales is the strongest signal towards improvements in general language modelling performance, outside the `Val/loss`
 
 | **Benchmark** | **Baseline (350M)** | **ASURA (x3)** |
 | --- | --- | --- |
-| LAMBADA (ppl) | 22.09 | **16.25** |
-| MMLU (acc) | 22.88% | 23.02% |
-| PIQA (acc) | 68.77% | 69.8% |
-| WinoGrande (acc) | 52.95% | 53.43% |
+| LAMBADA (ppl) | 17.81 | **16.25** |
+| MMLU (acc) | 22.95% | 23.02% |
+| PIQA (acc) | 70.08% | 69.8% |
+| WinoGrande (acc) | 52.96% | 53.43% |
 | BoolQ (acc) | 58.47% | 59.23 |
-| ARC-Easy (acc) | 40.4% | 41.54% |
-| HellaSwag (acc) | 40.42% | 42.25% |
-| OpenBookQA (acc) | 28.2% | 30.8% |
-| CommonsenseQA (acc) | 19.49% | 19.57% |
-
-Evidently, it seems we could keep training for a lot more tokens and gain a better delta over baseline. So in the next run, we scale tokens instead of parameters.
+| ARC-Easy (acc) | 42.26% | 41.54% |
+| HellaSwag (acc) | 42.33% | 42.25% |
+| OpenBookQA (acc) | 30.2% | 30.8% |
+| CommonsenseQA (acc) | 19.57% | 19.57% |
 
 **Validation loss** over the last 1% of the `FineWeb` dataset:
 
