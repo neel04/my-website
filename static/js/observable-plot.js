@@ -50,6 +50,18 @@ async function renderPlot(node) {
     series = buildSyntheticSeries(labels.length, total, seed);
   }
 
+  // Filter to the requested x-domain before plotting so out-of-range points
+  // do not get clamped onto the chart edge and appear as false spikes.
+  if (xMin !== null || xMax !== null) {
+    series = series.map((values) =>
+      values.filter((point) => {
+        if (xMin !== null && point.step < xMin) return false;
+        if (xMax !== null && point.step > xMax) return false;
+        return true;
+      })
+    );
+  }
+
   const rawSeries = series;
   if (smoothWindow > 1) {
     series = series.map((values) => smoothSeries(values, smoothWindow));

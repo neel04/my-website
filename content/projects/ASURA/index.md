@@ -373,14 +373,14 @@ One can observe a non-significant bump in `LAMBADA` performance, which at these 
 
 | **Benchmark** | **Baseline (350M)** | **ASURA (x3)** |
 | --- | --- | --- |
-| LAMBADA (ppl) | 17.81 | **16.25** |
+| LAMBADA (ppl) | 17.81 | **16.27** |
 | MMLU (acc) | 22.95% | 23.02% |
-| PIQA (acc) | 70.08% | 69.8% |
-| WinoGrande (acc) | 52.96% | 53.43% |
+| PIQA (acc) | 70.08% | 69.86% |
+| WinoGrande (acc) | 52.96% | 53.35% |
 | BoolQ (acc) | 58.47% | 59.23 |
-| ARC-Easy (acc) | 42.26% | 41.54% |
-| HellaSwag (acc) | 42.33% | 42.25% |
-| OpenBookQA (acc) | 30.2% | 30.8% |
+| ARC-Easy (acc) | 42.26% | 43.56% |
+| HellaSwag (acc) | 42.33% | 41.96% |
+| OpenBookQA (acc) | 30.2% | 31.8% |
 | CommonsenseQA (acc) | 19.57% | 19.57% |
 
 **Validation loss** over the last 1% of the `FineWeb` dataset:
@@ -390,19 +390,18 @@ One can observe a non-significant bump in `LAMBADA` performance, which at these 
   title="Validation loss for 350M model"
   caption="Validation loss for 350M model."
   series="Baseline,ASURA"
-  csv="data/wandb_350M_old.csv"
-  columns="base_350m_fixed - Val/loss,3i_350M_DeepSup - Val/loss"
+  csv="data/350M_val.csv"
+  columns="350M_baseline_QK_3eps - Val/loss,3i_350M_asura_ - Val/loss"
   x="Step"
   xLabel="Step"
   yLabel="Val/loss"
   showDots="false"
   showLastLabels="true"
   yMin="2"
-  yMax="2.75"
-  xMin="5000"
-  xMax="280000"
+  yMax="2.5"
+  xMax="836000"
   yScale="log"
-  smoothWindow="5"
+  smoothWindow="10"
 >}}
 
 **LAMBADA** scores (ppl):
@@ -412,21 +411,65 @@ One can observe a non-significant bump in `LAMBADA` performance, which at these 
   title="LAMBADA perplexity for 350M model"
   caption="LAMBADA perplexity for 350M model."
   series="Baseline,ASURA"
-  csv="data/350M_old_lambada_ppl.csv"
-  columns="base_350m_fixed - Bench/LAMBADA_ppl,3i_350M_DeepSup - Bench/LAMBADA_ppl"
+  csv="data/350M_lambada.csv"
+  columns="350M_baseline_QK_3eps - Bench/LAMBADA_ppl,3i_350M_asura_ - Bench/LAMBADA_ppl"
   x="Step"
   xLabel="Step"
   yLabel="LAMBADA ppl"
   showDots="false"
   yMax="60"
-  yMin="16"
-  xMax="315300"
-  xMin="10000"
+  yMin="14.9"
+  xMax="836000"
+  xMin="4000"
   showLastLabels="true"
   yScale="log"
   smoothWindow="7"
   yScale="log"
 >}}
+
+Interestingly, one can observe that the ASURA models' validation loss starts slightly increasing in the end. It's also higher than the baseline, for some reason - even though it generalizes quite well, as is evident from the `LAMBADA` scores.
+
+We hypothesize that increasing the dataset size would yield an even larger performance delta since that'd effectively saturate the recursive LMs' increase expressiveness and capacity and encourage more robust generalization.
+
+
+
+**Randomly picked sample continuation**:
+
+<div class="gen-compare">
+  <div class="gen-compare__prompt">
+    <div class="gen-compare__eyebrow">Shared prompt</div>
+    <pre class="gen-compare__text">Saturday, March 22, 2008
+The Only Endorsement I Need
+The</pre>
+  </div>
+  <div class="gen-compare__grid">
+    <section class="gen-compare__panel" aria-label="Baseline continuation">
+      <div class="gen-compare__panel-head">
+        <div class="gen-compare__label gen-compare__label--baseline">Baseline</div>
+        <div class="gen-compare__badge">350M</div>
+      </div>
+      <div class="gen-compare__body">
+        <pre class="gen-compare__text">only endorsement I need is the one that says, "I'm going to vote for you."
+I'm not going to vote for you. I'm not going to vote for the Republican candidate. I'm not going to vote for the Democratic candidate. I'm not going to vote for the Republican candidate. I'm ...</pre>
+      </div>
+    </section>
+    <section class="gen-compare__panel" aria-label="ASURA continuation">
+      <div class="gen-compare__panel-head">
+        <div class="gen-compare__label gen-compare__label--asura">ASURA</div>
+        <div class="gen-compare__badge">350M (x3)</div>
+      </div>
+      <div class="gen-compare__body">
+        <pre class="gen-compare__text">only endorsement I need is a friend who is willing to stand up for me.
+I was driving home from work one day and I stopped at a gas station. I was in the middle of a long drive and I needed a few gallons of gas. I pulled into the gas station and there was a man in the ...</pre>
+      </div>
+    </section>
+  </div>
+  <div class="gen-compare__footer">
+    <p class="gen-compare__footer-title">Comparison</p>
+    <p>ASURA maintains more coherency, giving that "big model smell" which is missing from our baseline</p>
+  </div>
+</div>
+
 
 ### [WIP]
 
