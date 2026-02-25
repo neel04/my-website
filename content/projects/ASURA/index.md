@@ -312,7 +312,7 @@ In this equation $(4)$, the $\operatorname{LN}\_i^{(\ell)}$ denotes the post‑`
 
 ## Pseudocode
 
-At a high level, the forward pass is:
+At a <u>high</u> level, the forward pass is:
 
 <div class="algorithm">
   <div class="algorithm-title"><i>Algorithm 1:</i> <code>ASURA</code></div>
@@ -329,7 +329,7 @@ $$
 &\quad \texttt{history} \leftarrow \\{ \\} \newline
 &\quad \texttt{for } t = 1,2,\ldots, i \texttt{ do} \newline
 &\qquad \hat{y}\_{\mathrm{proj}} \leftarrow \texttt{proj\\_and\\_concat}(\left[\hat{y}\_{t-1}, \\; X\_{\mathrm{in}}\right]) \newline
-&\qquad \hat{y}\_t \leftarrow \operatorname{ASURA}\_t(\hat{y}\_{\mathrm{proj}}) \newline
+&\qquad \hat{y}\_t \leftarrow \operatorname{ASURA}\_t(\hat{y}\_{\mathrm{proj}}, i) \newline
 &\qquad \hat{y}\_t \leftarrow \texttt{LayerNorm}(\hat{y}\_t) \newline
 &\qquad \texttt{history} \leftarrow \texttt{append}(\texttt{history}, \\; \hat{y}\_t) \newline
 &\quad \texttt{end for} \newline
@@ -466,7 +466,7 @@ I was driving home from work one day and I stopped at a gas station. I was in th
   </div>
   <div class="gen-compare__footer">
     <p class="gen-compare__footer-title">Comparison</p>
-    <p>ASURA maintains more coherency, giving that "big model smell" which is missing from our baseline</p>
+    <p>ASURA maintains more <i>coherency</i>, giving that "big model smell" which is missing from our baseline</p>
   </div>
 </div>
 

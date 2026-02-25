@@ -165,24 +165,18 @@ html[data-theme="dark"] code {
 
 html[data-theme="light"] td *,
 html[data-theme="light"] td {
-  background-color: rgb(239, 229, 191);
+  background-color: hsl(48 69% 89%);
   color: #3c3836;
 }
 
-html[data-theme="dark"] th *,
-html[data-theme="dark"] th {
-  background-color: rgb(50, 50, 50);
-  color: rgb(248, 239, 206);
-}
-
 html[data-theme="dark"] td {
-  background-color: #32302f;
+  background-color: hsl(29 7% 21%);
   color: var(--text-color);
 }
 
 html[data-theme="dark"] th *,
 html[data-theme="dark"] th {
-  background-color: #282828;
+  background-color: hsl(30 15% 13%);
   color: var(--text-color);
 }
 
@@ -628,7 +622,7 @@ header {
 .algorithm {
   border: 1px solid var(--code-border);
   border-radius: 8px;
-  background: var(--code-background);
+  background: hsl(44, 85%, 88%);
   margin: 1.5rem 0;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
@@ -704,6 +698,7 @@ header {
 
 /* Dark theme (Dracula-ish) */
 html[data-theme="dark"] .chroma { color: #e9e9f4; }
+html[data-theme="dark"] .algorithm { background: #34312a; }
 html[data-theme="dark"] .chroma .c  { color: #6a7685; font-style: italic; } /* comments */
 html[data-theme="dark"] .chroma .k  { color: #ff79c6; } /* keywords */
 html[data-theme="dark"] .chroma .kc,
@@ -750,8 +745,9 @@ html[data-theme="light"] .chroma .nt { color: #22863a; }
 
 /* Qualitative generation comparison card */
 .gen-compare {
+  --gen-compare-surface-bg: hsl(43 70% 90%);
   margin: 2rem 0 2.4rem;
-  background: #f3e7cc;
+  background: hsl(44, 69%, 88%);
   border: 1px solid #c4b687;
   border-radius: 14px;
   padding: 1.1rem;
@@ -762,7 +758,7 @@ html[data-theme="light"] .chroma .nt { color: #22863a; }
 }
 
 .gen-compare__prompt {
-  background: #f5efe0;
+  background: var(--gen-compare-surface-bg);
   border: 1px solid #d6ca9e;
   border-radius: 10px;
   padding: 0.75rem 0.9rem;
@@ -842,7 +838,7 @@ html[data-theme="light"] .chroma .nt { color: #22863a; }
 .gen-compare__panel {
   border: none;
   border-radius: 0;
-  background: #f5efe0;
+  background: var(--gen-compare-surface-bg);
   overflow: hidden;
 }
 
@@ -851,7 +847,7 @@ html[data-theme="light"] .chroma .nt { color: #22863a; }
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  background: #eee7d6;
+  background: hsl(38, 70%, 86%);
   border-bottom: 1px solid #ddd2b0;
   padding: 0.55rem 0.9rem;
 }
@@ -899,7 +895,7 @@ html[data-theme="light"] .chroma .nt { color: #22863a; }
 
 .gen-compare__footer {
   margin-top: 0;
-  background: #f5efe0;
+  background: var(--gen-compare-surface-bg);
   border: 1px solid #d6ca9e;
   border-radius: 10px;
   padding: 0.75rem 0.9rem 0.7rem;
@@ -922,13 +918,14 @@ html[data-theme="light"] .chroma .nt { color: #22863a; }
 
 /* Dark theme */
 html[data-theme="dark"] .gen-compare {
-  background: #242118;
+  --gen-compare-surface-bg: #26231b;
+  background: hsl(45 5% 10%);
   border-color: #3e3a30;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 html[data-theme="dark"] .gen-compare__prompt {
-  background: #26231b;
+  background: var(--gen-compare-surface-bg);
   border-color: #3e3a30;
 }
 
@@ -938,7 +935,7 @@ html[data-theme="dark"] .gen-compare__grid {
 }
 
 html[data-theme="dark"] .gen-compare__panel {
-  background: #26231b;
+  background: var(--gen-compare-surface-bg);
 }
 
 html[data-theme="dark"] .gen-compare__panel-head {
@@ -957,11 +954,11 @@ html[data-theme="dark"] .gen-compare__badge {
 }
 
 html[data-theme="dark"] .gen-compare__prompt .gen-compare__text {
-  color: #d4c8b0;
+  color: #9a8f7a;
 }
 
 html[data-theme="dark"] .gen-compare__body .gen-compare__text {
-  color: #ede2cc;
+  color: #d4c8b0;
 }
 
 html[data-theme="dark"] .gen-compare__eyebrow {
@@ -969,16 +966,16 @@ html[data-theme="dark"] .gen-compare__eyebrow {
 }
 
 html[data-theme="dark"] .gen-compare__footer {
-  background: #26231b;
+  background: var(--gen-compare-surface-bg);
   border-color: #3e3a30;
 }
 
 html[data-theme="dark"] .gen-compare__footer-title {
-  color: #9a8f7a;
+  color: #d4c8b0;
 }
 
 html[data-theme="dark"] .gen-compare__footer p {
-  color: #d4c8b0;
+  color: #ede2cc;
 }
 
 html[data-theme="dark"] .gen-compare__label--baseline {
